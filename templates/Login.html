@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <form id="login" method="post" action="{% url 'login' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="User" required /><br><br>
+        <input type="password" name="password" placeholder="Password" required /><br><br>
+        <input type="submit" value="Login" />
+    </form>
+</body>
+</html>
