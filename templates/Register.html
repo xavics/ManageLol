@@ -1,10 +1,62 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
-
-</body>
-</html>
+<style>
+    .msg-block {
+        margin-top:5px;
+    }
+    .msg-error {
+        color:#F00;
+        font-size:14px;
+    }
+</style>
+<form id="registerForm" name="registerForm" ng-controller="stageController" method="post" action="{% url 'register' %}" enctype="multipart/form-data" >
+    {% load Manager_extras %}
+    {% csrf_token %}
+    <legend> Register </legend>
+    <input type="text" class="form-control" name="team_name" placeholder="Team name" required />
+    <input type="email" class="form-control" name="team_email" placeholder="email" required />
+    <input type="password" id="pw1" class="form-control" name="pw1" placeholder="Password" ng-model="pw1" ng-required="" />
+    <input type="password" id="pw2" class="form-control" name="pw2" placeholder="Confirm psw" ng-model="pw2" ng-required="" pwCheck="pw1" />
+    <div class="msg-block" ng-show="registerForm.$invalid">
+        <span class="msg-error" ng-show="registerForm.pw2.$error.pwmatch">Passwords don't match.</span>
+    </div>
+    <i class="fa fa-icon fa-2x">Players</i><br>
+    {% for i in 5|get_range %}
+        <div class="form-group">
+            <label for="inputID" class="col-sm-2 control-label">Player {{ i }}:</label>
+            <div class="col-sm-10">
+                <input type="text" name="name" id="name_{{ i }}" class="form-control" value="" placeholder="Name" required="required" >
+                <input type="text" name="email" id="email_{{ i }}" class="form-control" value="" placeholder="Email" required="required" >
+                <label>Role:</label>{{ player_form.role }}
+                <div id="alert_{{ i }}" ></div>
+            </div>
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{#<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>#}
+{#<script>#}
+{#            // Declare app level module which depends on filters, and services#}
+{#            angular.module('manager', ['manager.directives']);#}
+{##}
+{#            /* Controllers */#}
+{#            function stageController($scope) {#}
+{#                $scope.pw1 = 'password';#}
+{#            }#}
+{##}
+{#            /* Directives */#}
+{#            angular.module('manager.directives', [])#}
+{#                .directive('pwCheck', [function () {#}
+{#                return {#}
+{#                    require: 'ngModel',#}
+{#                    link: function (scope, elem, attrs, ctrl) {#}
+{#						var me = attrs.ngModel;#}
+{#						var matchTo = attrs.pwCheck;#}
+{#                //console.log(ctrl.constructor.prototype)#}
+{#						scope.$watchGroup([me, matchTo], function(value){#}
+{#							ctrl.$setValidity('pwmatch', value[0] === value[1] );#}
+{#						});#}
+{##}
+{#                    }#}
+{#                }#}
+{#            }])#}
+{#            .controller('stageController', stageController);#}
+{#</script>#}

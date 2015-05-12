@@ -1,16 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
-<form id="register_form" method="post" action="{% url 'register' %}" enctype="multipart/form-data">
-    {% csrf_token %}
-{#    <input type="text" name="username" placeholder="User" required /><br><br>#}
-{#    <input type="password" name="password" placeholder="Password" required /><br><br>#}
-    {{ form }}
-    <input type="submit" value="Register" />
-</form>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block body %}
+{% load Manager_extras %}
+<div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
+</div>
+{% endblock %}

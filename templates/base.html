@@ -1,12 +1,183 @@
 <!DOCTYPE html>
-<html>
-{% load static %}
-<head lang="en">
-    <meta charset="UTF-8">
+<html lang="en" data-ng-app="manager">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Lol Hardcore Weekend</title>
     {% load staticfiles %}
-    <title></title>
-</head>
-<body>
+    <link rel="stylesheet" type="text/css" href="{% static 'Manager/stylesheet.css' %}" />
+    <!-- Bootstrap core CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <style>
+        body {
+            padding-top: 50px;
+        }
+        .starter-template {
+            padding: 40px 15px;
+            text-align: center;
+        }
+        #form{
+            background-color: rgba(224,224,224,0.7);
+            padding: 5px;
 
+        }
+        .form-group{
+        }
+        .form-control{
+            margin-bottom: 5px;
+        }
+        .alert{
+        }
+    </style>
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="container">
+    <div class="starter-template">
+        <div class="form-horizontal" ng-controller="FormsCtrl" role="form">
+            <div class="form-group">
+                <div class="col-sm-8 col-sm-offset-2">
+                    </div>
+                    <div class="btn-group">
+                            <a type="button" data-ng-click="load_form('{% url 'login' %}')" class="btn btn-default">Login</a>
+                            <a type="button" data-ng-click="load_form('{% url 'register' %}')" class="btn btn-default">Register</a>
+                    </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-4 col-sm-offset-0">
+                    <div class="btn-group-vertical" ng-controller="SomeController">
+{#                        <ul>#}
+{#                            Llista#}
+{#                           <li ng-repeat="location in locations.players">#}
+{#                               {% verbatim %}#}
+{#                                    <a href="#">{[{ location }]}</a>#}
+{#                              {% endverbatim %}#}
+{#                           </li>#}
+{#                        </ul>#}
+                    </div>
+                </div>
+                <div id="form" ng-show="is_visible" ng-bind-html="form_html" class="col-sm-8 col-sm-offset-0">
+{#                    <form id="register" method="post" action="{% url 'register' %}" enctype="multipart/form-data">#}
+{#                        {% csrf_token %}#}
+{#                        <input type="text" class="form-control" name="team_name" placeholder="Team name" required />#}
+{#                        <input type="email" class="form-control" name="team_email" placeholder="email" required />#}
+{#                        <input type="password" class="form-control" name="password" placeholder="Password" required />#}
+{#                        <i class="fa fa-icon fa-2x">Players</i><br>#}
+{#                        {% for i in 5|get_range %}#}
+{#                            <div class="form-group">#}
+{#                                <label for="inputID" class="col-sm-2 control-label">Player {{ i }}:</label>#}
+{#                            	<div class="col-sm-10">#}
+{#                            		<input type="text" name="name" id="name_{{ i }}" class="form-control" value="" placeholder="Name" required="required" >#}
+{#                            	    <input type="text" name="email" id="email_{{ i }}" class="form-control" value="" placeholder="Email" required="required" >#}
+{#                                    <label>Role:</label>{{ player_form.role }}#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        {% endfor %}#}
+{#                        <button type="submit" class="btn btn-primary">Submit</button>#}
+{#                    </form>#}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.container -->
+{#<div ng-controller="SomeController">#}
+{#<ul>#}
+{#    Llista#}
+{#   <li ng-repeat="location in locations.players">#}
+{#       {% verbatim %}#}
+{#      <a href="#">{[{ location }]}</a>#}
+{#      {% endverbatim %}#}
+{#   </li>#}
+{#</ul>#}
+{#</div>#}
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-sanitize.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script>
+    var app = angular.module('manager',['manager.directives','ngSanitize']).config(function($interpolateProvider){
+    $interpolateProvider.startSymbol('{[{');
+    $interpolateProvider.endSymbol('}]}');
+    });
+
+
+    app.factory('locations', function($http) {
+      var promise = null;
+
+      return function() {
+        if (promise) {
+          // If we've already asked for this data once,
+          // return the promise that already exists.
+          return promise;
+        } else {
+          promise = $http.get('{% static 'Manager/riotdatabase.json' %}');
+          return promise;
+        }
+      };
+    });
+
+    app.controller('SomeController', function($scope, locations) {
+      locations().success(function(data) {
+         $scope.locations = data;
+      });
+    });
+
+    app.controller('FormsCtrl', ['$scope','$http', '$sce', '$compile', function($scope, $http, $sce,$compile){
+        $scope.data_file = "hola";
+        $scope.is_visible = false;
+        $scope.load_form = function (url){
+            $scope.is_visible = true;
+            $http({
+                method: 'GET',
+                url: url
+            })
+            .success(function(data, status, headers, config){
+                $scope.html = data;
+                $scope.form_html = $sce.trustAsHtml($scope.html);
+            })
+            .error(function(data, status, headers, config){
+                $scope.html = data;
+                $scope.form_html = $sce.trustAsHtml($scope.html);
+            })
+        };
+    }]);
+
+
+    /* Controllers */
+    function stageController($scope) {
+        $scope.pw1 = 'password';
+    }
+
+    /* Directives */
+    angular.module('manager.directives', [])
+        .directive('pwCheck', [function () {
+        return {
+            require: 'ngModel',
+            link: function (scope, elem, attrs, ctrl) {
+                var me = attrs.ngModel;
+                var matchTo = attrs.pwCheck;
+                scope.$watchGroup([me, matchTo], function(value){
+                    ctrl.$setValidity('pwmatch', value[0] === value[1] );
+                });
+
+            }
+        }
+    }])
+    .controller('stageController', stageController);
+</script>
 </body>
 </html>

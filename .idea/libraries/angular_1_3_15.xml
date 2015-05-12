@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="angular-1.3.15" type="javaScript">
+    <properties>
+      <sourceFilesUrls>
+        <item url="file://$USER_HOME$/Descargas/angular-1.3.15" />
+      </sourceFilesUrls>
+    </properties>
+    <CLASSES>
+      <root url="file://$USER_HOME$/Descargas/angular-1.3.15" />
+    </CLASSES>
+    <SOURCES />
+  </library>
+</component>

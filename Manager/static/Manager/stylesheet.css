@@ -1,0 +1,7 @@
+body {
+    background-image: url("pictures/background_lol.jpg");
+    background-size: cover;
+    background-attachment: fixed;
+    margin: 0px;
+    overflow-y: scroll;
+}
