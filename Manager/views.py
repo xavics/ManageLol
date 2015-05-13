@@ -11,7 +11,7 @@ def base(request):
 def mainpage(request):
     team_form = TeamForm()
     player_form = PlayerForm()
-    return render(request, 'Main.html', {'team_form': team_form, 'player_form': player_form})
+    return render(request, 'base.html', {'team_form': team_form, 'player_form': player_form})
 
 def register(request):
     if request.method == 'POST':
@@ -80,6 +80,10 @@ def login_view(request):
 def team(request):
     players = Player.objects.filter(team=request.user)
     return render(request, 'pagina_team.html', {'players': players})
+
+def user_logout(request):
+    logout(request)
+    return HttpResponseRedirect('')
 
 def alert(request):
     return render(request, 'alert.html', {})

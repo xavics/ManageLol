@@ -6,8 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Lol Hardcore Weekend</title>
+    <title>Lol Weekend Competition</title>
     {% load staticfiles %}
+{#    <script src="{% static 'Manager/app.js' %}" />#}
     <link rel="stylesheet" type="text/css" href="{% static 'Manager/stylesheet.css' %}" />
     <!-- Bootstrap core CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
@@ -21,7 +22,7 @@
             text-align: center;
         }
         #form{
-            background-color: rgba(224,224,224,0.7);
+{#            background-color: rgba(224,224,224,0.7);#}
             padding: 5px;
 
         }
@@ -31,6 +32,13 @@
             margin-bottom: 5px;
         }
         .alert{
+        }
+        .msg-block {
+            margin-top:5px;
+        }
+        .msg-error {
+            color:#F00;
+            font-size:14px;
         }
     </style>
 
@@ -49,96 +57,89 @@
                 <div class="col-sm-8 col-sm-offset-2">
                     </div>
                     <div class="btn-group">
-                            <a type="button" data-ng-click="load_form('{% url 'login' %}')" class="btn btn-default">Login</a>
-                            <a type="button" data-ng-click="load_form('{% url 'register' %}')" class="btn btn-default">Register</a>
+{#                            <a type="button" data-ng-click="load_form('{% url 'login' %}')" class="btn btn-default">Login</a>#}
+{#                            <a type="button" data-ng-click="load_form('{% url 'register' %}')" class="btn btn-default">Register</a>#}
+                            <a type="button" data-ng-click="change_form()" ng-value="name_form" class="btn btn-default">
+                                {[{ name_form }]}
+                            </a>
                     </div>
             </div>
             <div class="form-group">
                 <div class="col-sm-4 col-sm-offset-0">
-                    <div class="btn-group-vertical" ng-controller="SomeController">
-{#                        <ul>#}
-{#                            Llista#}
-{#                           <li ng-repeat="location in locations.players">#}
-{#                               {% verbatim %}#}
-{#                                    <a href="#">{[{ location }]}</a>#}
-{#                              {% endverbatim %}#}
-{#                           </li>#}
-{#                        </ul>#}
+                    <div class="btn-group-vertical">
                     </div>
                 </div>
-                <div id="form" ng-show="is_visible" ng-bind-html="form_html" class="col-sm-8 col-sm-offset-0">
-{#                    <form id="register" method="post" action="{% url 'register' %}" enctype="multipart/form-data">#}
-{#                        {% csrf_token %}#}
-{#                        <input type="text" class="form-control" name="team_name" placeholder="Team name" required />#}
-{#                        <input type="email" class="form-control" name="team_email" placeholder="email" required />#}
-{#                        <input type="password" class="form-control" name="password" placeholder="Password" required />#}
-{#                        <i class="fa fa-icon fa-2x">Players</i><br>#}
-{#                        {% for i in 5|get_range %}#}
-{#                            <div class="form-group">#}
-{#                                <label for="inputID" class="col-sm-2 control-label">Player {{ i }}:</label>#}
-{#                            	<div class="col-sm-10">#}
-{#                            		<input type="text" name="name" id="name_{{ i }}" class="form-control" value="" placeholder="Name" required="required" >#}
-{#                            	    <input type="text" name="email" id="email_{{ i }}" class="form-control" value="" placeholder="Email" required="required" >#}
-{#                                    <label>Role:</label>{{ player_form.role }}#}
-{#                                </div>#}
-{#                            </div>#}
-{#                        {% endfor %}#}
+                <div id="div_login" ng-show="is_visible" ng-controller="FormController" class="col-sm-8 col-sm-offset-0">
+                    <form id="login" method="post" class="initial_form" action="{% url 'login' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <legend> Log In </legend>
+                        <input type="text" class="form-control" name="username" placeholder="User" required /><br><br>
+                        <input type="password" class="form-control" name="password" placeholder="Password" required /><br><br>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+                <div id="div_legendary" ng-hide="is_visible" ng-controller="FormController" class="col-sm-8 col-sm-offset-0">
+                    <form id="register" name="registerForm" class="initial_form" method="post" action="{% url 'register' %}" enctype="multipart/form-data" >
+                        {% load Manager_extras %}
+                        {% csrf_token %}
+                        <div>
+                            <img src="{% static 'Manager/pictures/logo_lol.png' %}">
+                        </div>
+                        <legend> Join the Competition! </legend>
+                        <input type="text" class="form-control" name="team_name" placeholder="Team name" required />
+                        <input type="email" class="form-control" name="team_email" placeholder="email" required />
+                        <input type="password" id="pw1" class="form-control" name="password" placeholder="Password" ng-model="pw1" ng-required="" />
+                        <input type="password" id="pw2" class="form-control" name="pw2" placeholder="Confirm password" ng-model="pw2" ng-required="" pwCheck="pw1" />
+                        <div class="msg-block" ng-hide="are_equals">
+                            <span class="msg-error">Passwords don't match.</span>
+                        </div>
+                        <i class="fa fa-icon fa-2x">Players</i><br>
+                        {% for i in 5|get_range %}
+                            <div class="form-group">
+                                <label for="inputID" class="col-sm-2 control-label">Player {{ i }}:</label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="name" id="name_{{ i }}" class="form-control" value="" placeholder="Name" required="required" >
+                                    <input type="text" name="email" id="email_{{ i }}" class="form-control" value="" placeholder="Email" required="required" >
+                                    <label>Role:</label>{{ player_form.role }}
+                                    <div id="alert_{{ i }}" ></div>
+                                </div>
+                            </div>
+                        {% endfor %}
 {#                        <button type="submit" class="btn btn-primary">Submit</button>#}
-{#                    </form>#}
+                        <button onclick="submitform()" class="btn btn-primary">Submit</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- /.container -->
-{#<div ng-controller="SomeController">#}
-{#<ul>#}
-{#    Llista#}
-{#   <li ng-repeat="location in locations.players">#}
-{#       {% verbatim %}#}
-{#      <a href="#">{[{ location }]}</a>#}
-{#      {% endverbatim %}#}
-{#   </li>#}
-{#</ul>#}
-{#</div>#}
 <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
+<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-sanitize.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 <script>
-    var app = angular.module('manager',['manager.directives','ngSanitize']).config(function($interpolateProvider){
+    var app = angular.module('manager',['ngSanitize']).config(function($interpolateProvider){
     $interpolateProvider.startSymbol('{[{');
     $interpolateProvider.endSymbol('}]}');
     });
 
 
-    app.factory('locations', function($http) {
-      var promise = null;
-
-      return function() {
-        if (promise) {
-          // If we've already asked for this data once,
-          // return the promise that already exists.
-          return promise;
-        } else {
-          promise = $http.get('{% static 'Manager/riotdatabase.json' %}');
-          return promise;
-        }
-      };
-    });
-
-    app.controller('SomeController', function($scope, locations) {
-      locations().success(function(data) {
-         $scope.locations = data;
-      });
-    });
-
     app.controller('FormsCtrl', ['$scope','$http', '$sce', '$compile', function($scope, $http, $sce,$compile){
-        $scope.data_file = "hola";
         $scope.is_visible = false;
+        $scope.name_form = "Log in";
+        $scope.change_form = function(){
+            if ($scope.is_visible == true){
+                $scope.is_visible = false;
+                $scope.name_form = "Log in";
+            }else{
+                $scope.is_visible = true;
+                $scope.name_form = "Register";
+            }
+        }
         $scope.load_form = function (url){
             $scope.is_visible = true;
             $http({
@@ -154,30 +155,30 @@
                 $scope.form_html = $sce.trustAsHtml($scope.html);
             })
         };
+
     }]);
 
+    app.controller('FormController', function($scope) {
 
-    /* Controllers */
-    function stageController($scope) {
-        $scope.pw1 = 'password';
-    }
-
-    /* Directives */
-    angular.module('manager.directives', [])
-        .directive('pwCheck', [function () {
-        return {
-            require: 'ngModel',
-            link: function (scope, elem, attrs, ctrl) {
-                var me = attrs.ngModel;
-                var matchTo = attrs.pwCheck;
-                scope.$watchGroup([me, matchTo], function(value){
-                    ctrl.$setValidity('pwmatch', value[0] === value[1] );
-                });
-
+        $scope.pw1='';
+        $scope.pw2='';
+        $scope.$watchGroup(['pw1', 'pw2'], function (value) {
+            if (value[0] == value[1]) {
+                $scope.are_equals=true;
+            } else {
+                $scope.are_equals=false;
             }
+        });
+    });
+
+    function submitform(){
+        frm = $('#register');
+        if ($('#pw1').val() == $('#pw2').val())
+            frm.submit();
+        else{
+            alert("Passwords no coincideixen");
         }
-    }])
-    .controller('stageController', stageController);
+    }
 </script>
 </body>
 </html>

@@ -5,3 +5,30 @@ body {
     margin: 0px;
     overflow-y: scroll;
 }
+#form_prova{
+    background-color: rgba(224,224,224,0.7);
+    padding: 25px;
+    margin-top: 0;
+    /*border-style: solid;*/
+    /*border-top-width: 100px;*/
+    /*border-image: url("pictures/header-bg.png") 100% 0 0 0 stretch;*/
+    /*-moz-border-image:url("pictures/header-bg.png") 30 30 round;*/
+    /*border-image-width: 0.5 0 0 0;*/
+}
+#legendary{
+    background-image: url("pictures/header-bg.png");
+    background-position: center;
+    background-color: transparent;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    height: 150px;
+    color: aquamarine;
+    line-height: 148px;
+    margin-bottom: 0;
+}
+
+.initial_form{
+    background-color: rgba(224,224,224,0.7);
+    padding: 25px;
+    margin-top: 0;
+}

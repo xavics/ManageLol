@@ -13,5 +13,5 @@ urlpatterns = patterns('',
     url(r'^register','Manager.views.register', name='register'),
     url(r'^login','Manager.views.login_view', name='login'),
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.BASE_DIR+'/TwitApp'+settings.MEDIA_URL}),
-
+    url(r'^logout', 'Manager.views.logout', name='logout'),
 )
