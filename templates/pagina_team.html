@@ -1,6 +1,408 @@
-Welcome {{ user }}<br>
-Players:<br>
-{% for player in players %}
-    {{ player }}<br>
-{% endfor %}
-<a href="{% url 'logout' %}">log out</a>
+{% extends 'base.html' %}
+{% block content %}
+
+<div id="player_container" class="container">
+    <h1 style="color:orangered">Team Zone</h1>
+    <br>
+    <div class="row">
+        <div class="col-lg-offset-2 col-lg-8">
+            <div id="buttonsMain" class="btn-group btn-group-lg btn-group-justified" role="group">
+                <a id="Button1" type="button" onclick="show_info()" class="btn btn-custom1">Team info</a>
+                <a id="Button2" type="button" onclick="show_class()" class="btn btn-custom1">Classification</a>
+                <a id="Button3" type="button" onclick="show_matches()" class="btn btn-custom1">Matches</a>
+            </div>
+        </div>
+    </div>
+    <div id="alertEditSucc" class="alert alert-success" style="display: none;">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>Congratulations!</strong> The changes have been saved succesfully ...
+    </div>
+    <div id="alertEditWar" class="alert alert-warning" style="display: none;">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>Warning!</strong> No changes applied ...
+    </div>
+    <div id="team_info" class="row">
+        <div id="team_row" class="col-lg-offset-2 col-lg-8">
+            <h1>{{ user.name }}</h1>
+            <div class="row">
+                    <div class="col-lg-6 col-sm-6">
+                        <h2>Points: {{ user.points }} </h2>
+                    </div>
+                    <div class="col-lg-6 col-sm-6">
+                        <h2><a type="button" onclick="show_edit()" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-pencil"></span>  Edit</a></h2>
+                    </div>
+            </div>
+            <h2>{{ user.email }}</h2>
+            <h2>Players:</h2>
+            <div class="row">
+                {% for player in players %}
+                    <div class="col-lg-4 col-sm-6 col-lg-offset-2">
+                        <h2> {{ player.name }} </h2>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <h2> {{ player.role }} </h2>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div id="team_edit" class="row">
+        <div id="team_row" class="col-lg-offset-2 col-lg-8">
+            <h1>{{ user.name }}</h1>
+            <div class="row">
+                    <div class="col-lg-6 col-sm-6">
+                        <h2>Points: {{ user.points }} </h2>
+                    </div>
+                    <div class="col-lg-6 col-sm-6">
+                        <h2><a type="button" onclick="save_changes(this)" team_id="{{ user.id }}" class="btn btn-success btn-lg"><span class="glyphicon glyphicon-ok"></span>  Save changes</a></h2>
+                    </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6 col-sm-6">
+                    <input type="text" name="email" id="emailInput" class="form-control" value="" placeholder="{{ user.email }}" title="" required="required" >
+                </div>
+                <div class="col-lg-6 col-sm-6">
+                    <a type="button" onclick="cancel_edit()" class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-remove"></span>  Cancel edit</a>
+                </div>
+            </div>
+            <h2>Players:</h2>
+{#            <div id="players_edit">#}
+                {% for player in players %}
+                <div id="row{{ player.id }}" class="row">
+                    <div class="col-lg-offset-2 col-lg-1 ">
+                        <h2>
+                        <a id="ChangeButton{{ player.id }}" player_id="{{ player.id }}" type="button" onclick="change_player(this, {{ player.id }})" class="btn btn-warning btn-lg"><span class="glyphicon glyphicon-refresh"></span>  Change</a>
+                            </h2>
+                    </div>
+                    <div class="col-lg-5">
+                        <h2 id="player{{ player.id }}"> {{ player.name }} </h2>
+                        <form id="form{{ player.id }}" player_id="{{ player.id }}" is_active="False" style="display: none;" action="" method="post" class="form-inline" role="form">
+                            <div class="form-group">
+                                <input type="text" name="name" id="name" class="form-control" value="" placeholder="{{ player.name }}" required="required" >
+                                <input type="text" name="email" id="email" class="form-control" value="" placeholder="{{ player.email }}" required="required" >
+                            </div>
+                        </form>
+                        </div>
+                    <div class="col-lg-3">
+                        <h2 id="Rplayer{{ player.id }}"> {{ player.role }} </h2>
+                        <div id="Rform{{ player.id }}" style="display: none;">
+                            <span class="label">Role</span>
+                            <select style="margin:0;" class="form-control" name="name" id="id_role" select="selected">
+                            	<option selected="true" value="default" >-----</option>
+                            	{% for option in options %}
+                                    <option value="{{ option.val }}">{{ option.txt }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+{#            </div>#}
+        </div>
+    </div>
+    <div id="classifications" class="row">
+        <div id="team_row" class="col-lg-offset-2 col-lg-8">
+            <h1>Classification</h1>
+            <div class="row">
+                <div class="col-lg-3 col-sm-6">
+                    Team
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    Points
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    Deads
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    Killed
+                </div>
+            </div>
+            {% for team in classification %}
+                {% if team.name == user.name %}
+                    <div  class="row" style="color: red">
+                        <div class="col-lg-3 col-sm-6" >
+                            {{ team.name }}
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            {{ team.points }}
+                        </div>
+                        <div class="col-lg-3 col-sm-6" >
+                            {{ team.dead }}
+                        </div>
+                        <div class="col-lg-3 col-sm-6" >
+                            {{ team.killed }}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="row">
+                        <div class="col-lg-3 col-sm-6">
+                            {{ team.name }}
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            {{ team.points }}
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            {{ team.dead }}
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            {{ team.killed }}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    <div id="match_list" class="row">
+        <div id="team_row" class="col-lg-offset-2 col-lg-8">
+        <h1>MATCHES ({{ matches|length }})</h1>
+            {% for match in matches %}
+                {% if match.winner %}
+                    {% if match.winner == user%}
+                        <div class="row" style="background-color: rgba(128,255,0,0.9); border-bottom: solid;">
+                    {% else %}
+                        <div class="row" style="background-color: rgba(255,51,51,0.9); border-bottom: solid;">
+                    {% endif %}
+                            <div class="col-lg-4">
+                                <h2 style="text-align: center">{{ match.winner }}</h2>
+                            </div>
+                            <div class="col-lg-4">
+                                <h2 style="text-align: center">#{{ match.id }}     Match {{ match.round.id}}</h2>
+                            </div>
+                            <div class="col-lg-4">
+                                <h2 style="text-align: center">
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#ReclamationModal" data-match="{{ match.id }}">
+                                        Reclamation
+                                    </button>
+{#                                    <a match="{{ match.id }}" type="button" onclick="go_to_reclamation(this)" class="btn btn-primary btn-sm">Reclamation</a>#}
+                                </h2>
+                            </div>
+                {% else %}
+                    <div class="row" style="border-bottom: solid;">
+                        <div class="col-lg-12">
+                            <h2 style="text-align: center">#{{ match.id }}     Match {{ match.round.id}}</h2>
+                        </div>
+                {% endif %}
+                        <div class="col-lg-4" style="text-align: center">
+                            <h3>{{ match.round.data|date:"M d, H:i:s" }}</h3>
+                        </div>
+                        <div class="col-lg-4" style="text-align: center">
+                            <h3>{{ match.local_team }}</h3>
+                        </div>
+                        <div class="col-lg-4" style="text-align: center">
+                            <h3>{{ match.visitor_team }}</h3>
+                        </div>
+                    </div>
+            {% endfor %}
+        </div>
+        </div>
+<!-- Modal -->
+<div class="modal fade" id="ReclamationModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="ReclamationModalLabel"></h4>
+      </div>
+      <div class="modal-body">
+          <textarea id="textarea" class="form-control" maxlength="250" rows="3" placeholder="Put your insignificant complaints here..."></textarea>
+          <p id="textnumber" class="text-right"></p>
+          <div id="alertCorrect" style="display: none;" class="alert alert-success">
+          	<strong>Succes!</strong> You will see the cahnges if the resolution is accepted ...
+          </div>
+          <div id="alertIncorrect" style="display: none" class="alert alert-danger">
+          	<strong>Error!</strong> Resolution can't be processed now ...
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" id="SubmitReclamation" onclick="sent_complain(this)" class="btn btn-primary">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+    $(document).ready(function() {
+        $('#team_info').show()
+        $('#classifications').hide()
+        $('#match_list').hide()
+        $('#team_edit').hide()
+
+
+
+        $('#ReclamationModal').on('show.bs.modal', function (event) {
+              var button = $(event.relatedTarget);
+              var recipient = button.data('match');
+              var modal = $(this)
+              modal.find('.modal-title').text('Reclamation Match '+recipient)
+              modal.find('#textarea').val('')
+              modal.find('#SubmitReclamation').attr('match',recipient);
+        });
+
+        $('#textarea').keyup(function(){
+            var text_lenght = $('#textarea').val().length;
+            var text_remaining = 250 - text_lenght;
+            $('#textnumber').text(text_remaining)
+        });
+    });
+
+    function show_info(){
+        $('#team_info').show();
+        $('#classifications').hide();
+        $('#match_list').hide();
+        $('#team_edit').hide();
+    }
+
+    function show_class(){
+        $('#team_info').hide();
+        $('#classifications').show();
+        $('#match_list').hide();
+        $('#team_edit').hide();
+    }
+    function show_matches(){
+        $('#team_info').hide();
+        $('#classifications').hide();
+        $('#match_list').show();
+        $('#team_edit').hide();
+    }
+    function show_edit(){
+        $('#team_info').hide();
+        $('#classifications').hide();
+        $('#match_list').hide();
+        $('#team_edit').show();
+        var buttons = $('*[id^="Button"]');
+        for(x=0; x<buttons.length; x++) {
+            $(buttons[x]).addClass('disabled').attr('disabled', true);
+        }
+    }
+
+    function cancel_edit(){
+        $('#team_info').show();
+        $('#team_edit').hide();
+        $('#emailInput').val('');
+        var buttons = $('*[id^="ChangeButton"]');
+        for(x=0; x< buttons.length; x++){
+            retrieve_player(buttons[x],$(buttons[x]).attr('player_id'));
+        }
+        var buttons = $('*[id^="Button"]');
+        for(x=0; x<buttons.length; x++) {
+            $(buttons[x]).removeClass('disabled').attr('disabled',false);
+        }
+    }
+
+    function retrieve_player(input, id){
+        $('#row'+id).find('#player'+id).show();
+        $('#row'+id).find('#form'+id).hide();
+        document.getElementById('form'+id).reset();
+        $('#row'+id).find('#form'+id).attr('is_active','False');
+        $('#row'+id).find('#Rform'+id).hide();
+        $('#row'+id).find('#Rplayer'+id).show();
+        $(input).attr('onclick','change_player(this,'+id+')');
+    }
+
+    function change_player(input, id){
+        $('#row'+id).find('#player'+id).hide();
+        $('#row'+id).find('#form'+id).show();
+        $('#row'+id).find('#form'+id).attr('is_active','True');
+        $('#row'+id).find('#Rplayer'+id).hide();
+        $('#row'+id).find('#Rform'+id).show();
+        $('#row'+id).find('select option:contains("-----")').prop('selected',true);
+        $(input).attr('onclick','retrieve_player(this,'+id+')');
+    }
+
+    function save_changes(input){
+        var new_players = [];
+        var old_players = [];
+        var forms = $('*[id^="form"]');
+        var formsR = $('*[id^="Rform"]');
+        var number = 0;
+        for(x=0; x< forms.length; x++){
+{#            alert($(forms[x]).attr('is_active'));#}
+            if($(forms[x]).attr('is_active') == 'True'){
+                if($(forms[x]).find('#name').val() == '' || $(forms[x]).find('#email').val() == ''){
+                    return alert("One ore more of the new player "+x+" forms are empty!");
+                }else if($(formsR[x]).find('#id_role').val()=='default'){
+                    return alert("Incorrect Role from player "+x);
+                }
+                else {
+                    var new_p = {'name': $(forms[x]).find('#name').val(), 'email':$(forms[x]).find('#email').val(),
+                                'role':$(formsR[x]).find('#id_role').val()}
+                    var new_p_js = JSON.stringify(new_p);
+                    {#                alert(data_f);#}
+                    var old_p = $(forms[x]).attr('player_id')
+                    new_players.push(new_p_js);
+                    old_players.push(old_p);
+                    number += 1;
+                }
+            }
+        }
+{#        alert(form_data);#}
+        if(number==0) {
+            var new_players_js = 0;
+            var old_players_js = 0;
+        }else{
+            var new_players_js = JSON.stringify(new_players);
+            var old_players_js = JSON.stringify(old_players);
+        }
+        var data_mail = $('#emailInput').val();
+        if(data_mail != ''){
+            if(!(isValidEmailAddress(data_mail))){
+                return alert("Email format incorrect");
+            }
+        }
+        $.ajax({
+            url: '{% url 'modify' %}',
+            type: 'POST',
+            data: {'team': $(input).attr('team_id'),'email': data_mail, 'old_players': old_players_js, 'new_players': new_players_js},
+            success: function (data) {
+                if(data == 'Correct') {
+                    cancel_edit();
+                    $('#alertEditSucc').show()
+                    window.setTimeout(function () {
+                        $('#alertEditSucc').hide()
+                        location.reload();
+                    }, 1000);
+                }else if((data == 'Empty')){
+                    $('#alertEditWar').show()
+                    window.setTimeout(function () {
+                        $('#alertEditWar').hide()
+                    }, 1000);
+                }
+                else{
+                    alert(data);
+                }
+            }
+        });
+    }
+
+    function isValidEmailAddress(emailAddress) {
+        var pattern = new RegExp(/^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?$/i);
+        return pattern.test(emailAddress);
+    };
+
+    function sent_complain(input){
+        var info = $(input).attr('match');
+        var description = $('#textarea').val();
+        $.ajax({
+            url: '{% url 'reclamation' %}',
+            type: 'POST',
+            data: {'match': info, 'description':description},
+            success: function (data) {
+                if(data == 'Correct') {
+                    $('#alertCorrect').show()
+                    window.setTimeout(function () {
+                        $('#ReclamationModal').modal('hide');
+                    }, 1000);
+                    $('#alertCorrect').hide()
+                }else{
+                    $('#alertIncorrect').show()
+                    window.setTimeout(function () {
+                        $('#ReclamationModal').modal('hide');
+                    }, 1000);
+                    $('#alertIncorrect').hide()
+                }
+            }
+        });
+    }
+
+</script>
+{% endblock %}

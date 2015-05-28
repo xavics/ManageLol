@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div id="game_container" class="container">
+        <h1>Next Match</h1>
+        <h2 match="{{ match.id }}" id="match" time="{{ match.round.data|date:"Y m d H i s" }}">
+            {{ match.round.data|date:"Y/m/d H:i:s" }}
+        </h2>
+        <div class="row">
+            <div class="col-lg-4">
+                <h2>{{ match.local_team }}</h2>
+            </div>
+            <div class="col-lg-4">
+                    <h2>VS</h2>
+             </div>
+             <div class="col-lg-4">
+                    <h2>{{ match.visitor_team }}</h2>
+             </div>
+        </div>
+        <h1 id="numero"></h1>
+        <a type="button" id="play" onclick="setIp()" style="display:none;" class="btn btn-warning btn-lg btn-block">Play</a>
+        <h3 style="color:greenyellow;" id="ip" style="display: none;"></h3>
+        <div id="results" style="display:none;" class="row">
+            <div class="col-lg-offset-3 col-lg-6">
+                <h1 id="winner">Winner </h1>
+                <div class="row">
+                    <div class="col-lg-offset-3 col-lg-3">
+                        <h2 id="local_team"></h2>
+                    </div>
+                    <div class="col-lg-3">
+                        <h2 id="visitor_team"></h2>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-offset-1 col-lg-2">
+                        <h2>Dead</h2>
+                    </div>
+                    <div class="col-lg-3">
+                        <h2 id="local_dead"></h2>
+                    </div>
+                    <div class="col-lg-3">
+                        <h2 id="visitor_dead"></h2>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-offset-1 col-lg-2">
+                        <h2>Killed</h2>
+                    </div>
+                    <div class="col-lg-3">
+                        <h2 id="local_killed"></h2>
+                    </div>
+                    <div class="col-lg-3">
+                        <h2 id="visitor_killed"></h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+    $(function() {
+        reload();
+    });
+
+    function reload() {
+        var round = $('#match').attr('time');
+        var time1 = new Date();
+        var ah = round.split(/[ ]+/);
+        var time2 = new Date(+ah[0], +ah[1]-1,+ah[2] ,+ah[3] ,+ah[4] ,+ah[5]);
+{#        var time2 = new Date(2015, 4, 26, 11, 44, 0)#}
+        var timeDiff = Math.abs(time2.getTime() - time1.getTime());
+        var diffDays = Math.trunc(timeDiff / (1000 * 3600 * 24));
+        var diffHour = Math.trunc((timeDiff / (1000 * 3600 ))-(diffDays * (24)));
+        var diffMinutes = Math.trunc(timeDiff / (1000 * 60) - (diffDays * (24 * 60)) - (diffHour * (60)));
+        var diffSeconds = Math.trunc(timeDiff / (1000) - (diffDays * (24 * 3600)) - (diffHour * (3600)) - (diffMinutes * (60)));
+        var total = diffDays + " days " + diffHour + " hours " + diffMinutes + " minutes " + diffSeconds + " seconds";
+        $('#numero').html(total);
+        if (diffDays == 0){
+            if(diffHour<=1 && diffMinutes<=59){
+                $('#play').show();
+            }else{
+                $('#play').hide();
+            }
+        }else {
+            $('#play').hide();
+        }
+        setTimeout("reload()",100);
+    }
+
+    function setIp(){
+        var info = $('#match').attr('match')
+        $.ajax({
+            url: '/set_ip',
+            data: {'match': info},
+            success: function (data) {
+                alert(data);
+                var json = JSON.parse(data);
+                $('#ip').html(json.ip);
+                $('#ip').show();
+                $('#winner').append(json.winner)
+                $('#local_dead').html(json.local.dead);
+                $('#local_killed').html(json.local.killed);
+                $('#local_team').html(json.local.team);
+                $('#visitor_killed').html(json.visitor.killed);
+                $('#visitor_dead').html(json.visitor.dead);
+                $('#visitor_team').html(json.visitor.team);
+                $('#results').show();
+            }
+        });
+    }
+</script>
+{% endblock %}
