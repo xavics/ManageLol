@@ -4,8 +4,8 @@ import requests
 import datetime
 
 # For Program
-with open('Manager/riotdatabase.json') as data_file:
-    data = json.load(data_file)
+# with open('Manager/riotdatabase.json') as data_file:
+#     data = json.load(data_file)
 
 # For debugging
 # with open('riotdatabase.json') as data_file:
@@ -23,7 +23,7 @@ def make_db_inserts():
             st_x = str(x)
             data = str(datetime.datetime.now())
             team_name = "t"+st_x
-            values = "'"+st_x+"','xxx','"+data+"','"+team_name+"',0,'mailo','','False'"
+            values = "'"+st_x+"','xxx','"+data+"','"+team_name+"',0,'mailo','','False','False'"
             f.write("insert into Manager_team values("+values+");\n")
             x_p = (x-1)*5
             for y in range(6):
@@ -49,16 +49,21 @@ def is_top_team(name):
 def send_confimation_email(addres, data):
     fromadd = 'manager.lol.models@gmail.com'
     toadd = addres
-    players_list = "Team players:\n"
-    for player in data['players']:
-        players_list = players_list+"   - "+player.name+" ( "+player.role+" )\n"
+    if data['type'] == "confirmation":
+        players_list = "Team players:\n"
+        for player in data['players']:
+            players_list = players_list+"   - "+player.name+" ( "+player.role+" )\n"
+        subj = "Welcome to Lol competition"
+        text = "Hi team "+data['team']+"!\n"+players_list+"Your are ready to participate in the League of Legends competition"
+    if data['type'] == "xml":
+        subj = "Ronda "+str(data['id'])
+        text = data['text']
     msg = "\r\n".join([
         "From: manager.lol.models@gmail.com",
         "To: "+toadd,
-        "Subject: Welcome to Lol competition",
+        "Subject:"+subj,
         "",
-        "Hi team "+data['team']+"!\n"+players_list+"Your are ready to participate in the League of Legends competition"+
-        "\nWe wish you will have a cool time"
+        "\n"+text
     ])
     username = 'manager.lol.models@gmail.com'
     password = 'managerLoL.models'

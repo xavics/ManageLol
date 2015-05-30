@@ -1,6 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, UserManager
+from django.contrib.auth.models import AbstractBaseUser, UserManager, Group
 from itertools import chain
+from collections import OrderedDict
 # Create your models here.
 
 
@@ -20,11 +21,13 @@ class Team(AbstractBaseUser):
     name = models.CharField(max_length=100, unique=True)
     points = models.IntegerField(default=0)
     email = models.CharField(max_length=100)
+    group = models.ManyToManyField(Group)
     league = models.ForeignKey(League, related_name='league', blank=True, null=True)
     USERNAME_FIELD = 'name'
     # REQUIRED_FIELDS = ['email']
     is_admin = models.BooleanField(default=False)
     objects = UserManager()
+    is_referee = models.BooleanField(default=False)
 
     def set_email(self,email):
         self.email = email
@@ -102,6 +105,18 @@ class Rounds(models.Model):
     # hora = models.CharField(max_length=5)
 
 
+    def get_as_dict(self):
+        matches_en = Match.objects.filter(round=self.id)
+        matches_count = matches_en.count()
+        matches = []
+        for match in matches_en:
+            serial = match.get_as_dict()
+            matches.append(serial)
+        # d = {'id': self.id, 'data':str(self.data), 'matches_count':matches_count,'matches':matches}
+        return OrderedDict([('id', self.id),('data',str(self.data)),('matches_count',matches_count),('matches',matches)])
+        # return OrderedDict(sorted(d.items(), key=lambda x:x[1], reverse=True))
+
+
 class Match(models.Model):
     local_team = models.ForeignKey(Team, related_name='local_team')
     visitor_team = models.ForeignKey(Team, related_name='visitor_team')
@@ -123,6 +138,16 @@ class Match(models.Model):
         else:
             return True
 
+    def get_as_dict(self):
+        local_st = Statistics.objects.get(match=self, team=self.local_team)
+        visitor_st = Statistics.objects.get(match=self, team=self.visitor_team)
+        statistics = [local_st.get_as_dict(),visitor_st.get_as_dict()]
+        d = {'id': self.id, 'local': self.local_team.id,'visitor': self.visitor_team.id,'ip': self.ip, 'winner':self.winner,
+                'statistics': statistics}
+        return OrderedDict([('id', self.id),('local',self.local_team.id),('visitor',self.visitor_team.id),('ip',self.ip),
+                    ('winner', self.winner), ('statistics', statistics)])
+        # return OrderedDict(sorted(d.items(), key=lambda x:x[1], reverse=True))
+
 class Statistics(models.Model):
     team = models.ForeignKey(Team, related_name='steam')
     match = models.ForeignKey(Match, related_name='smatch')
@@ -133,13 +158,23 @@ class Statistics(models.Model):
         self.killed = killed
         self.dead = dead
 
+    def get_as_dict(self):
+        # d = {'id':self.id,'team':self.team.id,'dead':self.dead, 'killed':self.killed}
+        return OrderedDict([('id',self.id),('team',self.team.id),('dead',self.dead),('killed',self.killed)])
+        # return OrderedDict(sorted(d.items(), key=lambda x:x[1], reverse=True))
+
+
 
 class Notice(models.Model):
     text = models.TextField(max_length=250)
 
-class Resolution(models.Model):
+class Reclamation(models.Model):
     match = models.ForeignKey(Match, related_name='rmatch')
+    team = models.ForeignKey(Team, related_name='rteam')
     description = models.TextField(max_length=250)
     solved = models.BooleanField(default=False)
-    resultat = models.TextField(max_length=250, blank=True, null=True)
+    result = models.TextField(max_length=250, blank=True, null=True)
 
+    def resolve(self, result):
+        self.solved = True
+        self.result = result

@@ -157,7 +157,7 @@
         <h1>MATCHES ({{ matches|length }})</h1>
             {% for match in matches %}
                 {% if match.winner %}
-                    {% if match.winner == user%}
+                    {% if match.winner == user.id%}
                         <div class="row" style="background-color: rgba(128,255,0,0.9); border-bottom: solid;">
                     {% else %}
                         <div class="row" style="background-color: rgba(255,51,51,0.9); border-bottom: solid;">
@@ -215,7 +215,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" id="SubmitReclamation" onclick="sent_complain(this)" class="btn btn-primary">Send</button>
+        <button type="button" id="SubmitReclamation" onclick="sent_complain('{{ user.id }}')" class="btn btn-primary">Send</button>
       </div>
     </div>
   </div>
@@ -233,7 +233,7 @@
               var button = $(event.relatedTarget);
               var recipient = button.data('match');
               var modal = $(this)
-              modal.find('.modal-title').text('Reclamation Match '+recipient)
+              modal.find('.modal-title').html('Reclamation Match '+"<span id='r_match_id'>"+recipient+"<span>")
               modal.find('#textarea').val('')
               modal.find('#SubmitReclamation').attr('match',recipient);
         });
@@ -318,6 +318,7 @@
         for(x=0; x< forms.length; x++){
 {#            alert($(forms[x]).attr('is_active'));#}
             if($(forms[x]).attr('is_active') == 'True'){
+{#                alert($(forms[x]).find('#name').val())#}
                 if($(forms[x]).find('#name').val() == '' || $(forms[x]).find('#email').val() == ''){
                     return alert("One ore more of the new player "+x+" forms are empty!");
                 }else if($(formsR[x]).find('#id_role').val()=='default'){
@@ -349,6 +350,9 @@
                 return alert("Email format incorrect");
             }
         }
+{#        alert(new_players_js);#}
+{#        alert(old_players_js);#}
+{#        alert(data_mail);#}
         $.ajax({
             url: '{% url 'modify' %}',
             type: 'POST',
@@ -379,20 +383,22 @@
         return pattern.test(emailAddress);
     };
 
-    function sent_complain(input){
-        var info = $(input).attr('match');
+    function sent_complain(id_team){
+        var info = $('#ReclamationModal').find('#r_match_id').text();
         var description = $('#textarea').val();
         $.ajax({
             url: '{% url 'reclamation' %}',
             type: 'POST',
-            data: {'match': info, 'description':description},
+            data: {'match': info, 'description':description, 'complaient':id_team},
             success: function (data) {
                 if(data == 'Correct') {
-                    $('#alertCorrect').show()
+                    $('#alertCorrect').show();
                     window.setTimeout(function () {
                         $('#ReclamationModal').modal('hide');
                     }, 1000);
-                    $('#alertCorrect').hide()
+                    window.setTimeout(function () {
+                        $('#alertCorrect').modal('hide');
+                    }, 1000);
                 }else{
                     $('#alertIncorrect').show()
                     window.setTimeout(function () {

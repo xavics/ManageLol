@@ -6,14 +6,27 @@
         <div class="form-horizontal" ng-controller="FormsCtrl" role="form">
             <div class="form-group">
                 <div class="col-sm-8 col-sm-offset-2">
+                    {% if registers == 'open' %}
+                    <div class="col-lg-offset-3">
+                        <span style="font-size: x-large; color: orangered;">
+                            Registers will close at {{ close_date }}
+                        </span>
                     </div>
+                    {% else %}
+                    <div class="col-lg-offset-4">
+                        <span style="font-size: xx-large; color: red;">
+                            Registers are closed!
+                        </span>
+                    </div>
+                    {% endif %}
+                    </div>
+                    {% if registers == 'open' %}
                     <div class="btn-group">
-{#                            <a type="button" data-ng-click="load_form('{% url 'login' %}')" class="btn btn-default">Login</a>#}
-{#                            <a type="button" data-ng-click="load_form('{% url 'register' %}')" class="btn btn-default">Register</a>#}
                             <a type="button" data-ng-click="change_form()" ng-value="name_form" class="btn btn-warning btn-lg">
                                 {[{ name_form }]}
                             </a>
                     </div>
+                    {% endif %}
             </div>
             <div class="form-group">
                 <div class="col-sm-4 col-sm-offset-0">
@@ -90,4 +103,73 @@
         </div>
     </div>
 </div>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-sanitize.min.js"></script>
+<script>
+
+    var registers;
+
+    $(function(){
+        $('#server_stats').hide();
+        $('#notices').hide();
+        registers = "{{ registers }}";
+    });
+
+    var app = angular.module('manager',['ngSanitize']).config(function($interpolateProvider){
+    $interpolateProvider.startSymbol('{[{');
+    $interpolateProvider.endSymbol('}]}');
+    });
+
+    $('#servers_info').on('show.bs.dropdown', function(e){
+        $(this).find('#server_stats').first().stop(true,true).slideDown();
+    });
+
+    $('#notices_').on('show.bs.dropdown', function(e){
+        $(this).find('#notices').first().stop(true,true).slideDown();
+    });
+
+    $('#servers_info').on('hide.bs.dropdown', function(e){
+        $(this).find('#server_stats').first().stop(true,true).slideUp();
+    });
+
+    $('#notices_').on('hide.bs.dropdown', function(e){
+        $(this).find('#notices').first().stop(true,true).slideUp();
+    });
+
+
+    app.controller('FormsCtrl', ['$scope','$http', '$sce', '$compile', function($scope, $http, $sce,$compile) {
+        $scope.is_visible = true;
+        $scope.name_form = "Log in";
+        $scope.change_form = function(){
+            if ($scope.is_visible == true){
+                $scope.is_visible = false;
+                $scope.name_form = "Log in";
+            }else{
+                $scope.is_visible = true;
+                $scope.name_form = "Register";
+            }
+        }
+    }]);
+
+    app.controller('FormController', function($scope) {
+        $scope.pw1='';
+        $scope.pw2='';
+        $scope.$watchGroup(['pw1', 'pw2'], function (value) {
+            if (value[0] == value[1]) {
+                $scope.are_equals=true;
+            } else {
+                $scope.are_equals=false;
+            }
+        });
+    });
+
+    function submitform(){
+        frm = $('#register');
+        if ($('#pw1').val() == $('#pw2').val())
+            frm.submit();
+        else{
+            alert("Passwords no coincideixen");
+        }
+    }
+</script>
 {% endblock %}

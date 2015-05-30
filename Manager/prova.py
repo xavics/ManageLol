@@ -3,10 +3,13 @@ import datetime
 from random import randint, getrandbits
 import json
 from ManageLol import settings
-from Manager.models import Team, League, Rounds, Match, Statistics, Player
-from serializers import PlayerSerializer, TeamSerializer, LeagueSerializer
+from Manager.models import Team, League, Rounds, Match, Statistics, Player, Reclamation
 from rest_framework_xml.renderers import XMLRenderer
-import xml.dom.minidom
+from xml.dom.minidom import parseString
+from Riot import send_confimation_email
+from django.contrib.auth.models import Group
+# import copy
+import dicttoxml
 
 def distribucio(num):
     list = []
@@ -176,11 +179,14 @@ def generate_competition(leagues):
             # hora_mod = horari
             if horari >= 24:
                 # data = "Diumenge"
-                hora_mod = horari-24
-                data = datetime.datetime(2015, 5, 27, hora_mod)
+                if horari != 24:
+                    hora_mod = horari-24-1
+                else:
+                    hora_mod = horari-24
+                data = datetime.datetime(2015, 5, 30, hora_mod)
             else:
                 # data = "Dissabte"
-                data = datetime.datetime(2015, 5, 26, horari)
+                data = datetime.datetime(2015, 5, 31, horari)
             # if horari < 10:
             #     hora = "0"+str(hora_mod)+":00"
             # else:
@@ -227,29 +233,69 @@ def make_random_statistics(match_id):
     statistics_visitor.save()
     statistics_local.save()
 
+def resoldre_reclamacio(id):
+    reclamation = Reclamation.objects.get(id=id)
+    # if bool(getrandbits(1)):
+    #     winner = match.local_team.id
+    #     local = Team.objects.get(id=match.local_team.id)
+    #     local.points += 1
+    #     local.save()
+    # else:
+    #     winner = match.visitor_team.id
+    #     visitor = Team.objects.get(id=match.visitor_team.id)
+    #     visitor.points += 1
+    #     visitor.save()
+    # recl
 
-def gamers_statistics():
-    num_leagues = League.objects.count()
-    num_teams = Team.objects.count()
-    num_players = Player.objects.count()
-    serial = LeagueSerializer(League.objects.all(), many=True)
-    doc = xml.dom.minidom.parseString(XMLRenderer().render(serial.data))
-    return doc
+
+def round_statistics(id):
+    structure_en = Rounds.objects.get(id=id)
+    structure = structure_en.get_as_dict()
+    xml = dicttoxml.dicttoxml(structure)
+    dom = parseString(xml)
+    data = {'type':"xml", 'id':id, 'text':dom.toprettyxml() }
+    send_confimation_email("xacosa@gmail.com", data)
+    return dom.toprettyxml()
+
+def make_admin():
+    team = Team(name='admin', is_admin=True)
+    team.save()
+    team.set_password('admin')
+    team.save()
+
+def make_referee(name, password):
+    team = Team(name=name, is_referee=True)
+    team.save()
+    team.set_password(password)
+    team.save()
+    referee_g = Group.objects.get(name='Referee')
+    team.group.add(referee_g)
 
 
-if __name__ == "__main__":
-    serial = LeagueSerializer(League.objects.all(), many=True)
-    doc = xml.dom.minidom.parseString(XMLRenderer().render(serial.data))
-    print doc.toprettyxml()
-    # make_random_statistics(1)
+def close_registers():
+    leagues = generate_leagues()
+    generate_competition(leagues)
 
-    # leagues = generate_leagues()
-    # generate_competition(leagues)
-    # team = Team.objects.get(name='t2')
-    # team.set_password("xxx")
-    # team.save()
-    teams = Team.objects.get(name='t1')
-    teams.is_admin = True
-    teams.save()
-    teams.set_password("xxx")
-    teams.save()
+
+def make_enable_team(team):
+    team = Team.objects.get(name=team)
+    team.set_password("xxx")
+    team.save()
+
+def create_groups():
+    team_g = Group.objects.create(name='Team')
+    referee_g = Group.objects.create(name='Referee')
+    auth_g = Group.objects.create(name='Admin')
+
+if __name__ == '__main__':
+    # close_registers()
+    # create_groups()
+    # make_referee("ref1","xxx")
+    team = Team.objects.get(id=1)
+    print team.group
+    referee_g = Group.objects.get(name='Referee')
+    referee_g.team_set.add(team)
+    team.group.add(referee_g)
+    team.save()
+    # make_admin()
+    # make_enable_team("t1")

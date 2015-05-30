@@ -1,8 +1,11 @@
 from django.shortcuts import render, HttpResponseRedirect, HttpResponse
+from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
 from Manager.Forms import TeamForm, PlayerForm
 from django.contrib.auth import authenticate, login, logout
-from models import Team, Player, Rounds, Match, League, Notice, Resolution
+from models import Team, Player, Rounds, Match, League, Notice, Reclamation
 import Riot
 from Manager.prova import make_random_statistics
 import json
@@ -10,7 +13,19 @@ from itertools import chain
 from operator import attrgetter, itemgetter
 from django.db.models import Q
 from django.utils import timezone
+from datetime import datetime
 import ast
+import sys
+from django.contrib.auth.decorators import user_passes_test
+
+def group_required(*group_names):
+    """Requires user membership in at least one of the groups passed in."""
+    def in_groups(u):
+        if u.is_authenticated():
+            if bool(u.group.filter(name__in=group_names)) | u.is_admin:
+                return True
+        return False
+    return user_passes_test(in_groups, redirect_field_name='', login_url='/')
 
 def base(request):
     return render(request, 'prova.html', {})
@@ -20,8 +35,14 @@ def mainpage(request):
     player_form = PlayerForm()
     servers = Riot.get_servers_stats()
     notices = Notice.objects.all()
+    closing = datetime(2015, 05, 29, 19, 45, 00)
+    now = datetime.now()
+    if (closing - now).days >= 0:
+        registers = "open"
+    else:
+        registers = 'closed'
     return render(request, 'Main.html', {'team_form': team_form, 'player_form': player_form,'servers':servers,
-                                         'notices': notices})
+                                         'notices': notices, 'registers': registers, 'close_date':closing})
 
 def register(request):
     if request.method == 'POST':
@@ -49,7 +70,7 @@ def register(request):
         for player in players:
             player.set_team(team)
             player.save()
-        data_email = {'team':team_name, 'players':players}
+        data_email = {'type': "confirmation",'team':team_name, 'players':players}
         Riot.send_confimation_email(team_email, data_email)
         #log in
         team = authenticate(username=team_name, password=myDict['password'][0])
@@ -103,7 +124,7 @@ def team(request, name):
 
 def user_logout(request):
     logout(request)
-    return HttpResponseRedirect('')
+    return HttpResponseRedirect(reverse('main'))
 
 def alert(request):
     return render(request, 'alert.html', {})
@@ -140,16 +161,32 @@ def set_ip(request):
     else:
         return HttpResponse("Bad request!")
 
+
+@csrf_exempt
 def reclamation(request):
     if request.method == 'POST':
         match_id = request.POST.get('match')
         description = request.POST.get('description')
-        match = Match.objects.get(id=match_id)
-        resolution = Resolution(match=match, description=description)
-        resolution.save()
-        HttpResponse('Correct')
+        complaient = request.POST.get('complaient')
+        print type(match_id), match_id, type(description), description, type(complaient), complaient
+        match = Match.objects.get(id=int(match_id))
+        print match
+        complaient_en = Team.objects.get(id=int(complaient))
+        print complaient_en
+        try:
+            reclam = Reclamation(match=match, description=str(description), team=complaient_en)
+        except:
+            print "Creating Error", sys.exc_info()
+            raise
+        print "pass"
+        try:
+            reclam.save()
+        except:
+            print "Creating Error", sys.exc_info()
+            raise
+        return HttpResponse('Correct')
     else:
-        HttpResponse('Incorrect')
+        return HttpResponse('Incorrect')
 
 
 @csrf_exempt
@@ -161,10 +198,14 @@ def modify(request):
         data_old = request.POST.get('old_players')
         data_new = request.POST.get('new_players')
         new_players = json.loads(data_new)
+        print new_players
         old_players = json.loads(data_old)
+        print new_players, old_players
         if new_players != 0:
             for player_ in new_players:
                 player = json.loads(player_)
+                print player
+                print player['name'], player['email']
                 if not Riot.is_riot_user(player['name'], player['email']):
                         return HttpResponse('Player '+player['name']+' incorrect name/email')
             team = Team.objects.get(id=team_id)
@@ -176,9 +217,9 @@ def modify(request):
                 player_entry.save()
         if old_players != 0:
             for player in old_players:
-                player = Player.objects.get(id=player)
-                print player.name
-                player.delete()
+                player_en = Player.objects.get(id=player)
+                print player_en.name
+                player_en.delete()
         if data_email != '':
             team.email = data_email
             team.save()
@@ -188,3 +229,70 @@ def modify(request):
             return HttpResponse('Correct')
     else:
         return HttpResponse('Bad')
+
+
+def auth_ref(request):
+    if request.method == 'GET':
+        return render(request, 'referee_log.html', {})
+    if request.method == 'POST':
+        team = authenticate(username=request.POST['name'], password=request.POST['password'])
+        print team.group.filter(name='Referee')
+        if bool(team.group.filter(name='Referee')):
+            if team:
+                if team.is_active and team.is_referee:
+                    login(request, team)
+                    return HttpResponseRedirect('/referee/')
+                else:
+                    return HttpResponse("Your account is disabled/no referee")
+            else:
+                print "Invalid log details: {0}, {1}".format(request.POST['name'], request.POST['password'])
+                return HttpResponse("Invalid log details")
+        else:
+            return HttpResponse("Invalid Group")
+
+
+@group_required('Referee')
+def referee(request):
+    reclamations = Reclamation.objects.filter(solved=False)
+    return render(request, 'referee.html', {'reclamations': reclamations})
+
+def resolve_reclamation(request,id):
+    if request.method == 'POST':
+        winner = request.POST['winner']
+        comments = request.POST['comments']
+        resolution = "{'referee':"+str(request.user)+",'winner':"+str(winner)+",'comments':"+str(comments)+"}"
+        reclamation = Reclamation.objects.get(id=id);
+        try:
+            match = Match.objects.get(id=reclamation.match_id)
+            print str(winner)+"    /  "+str(match.winner)
+            if(winner != match.winner):
+                if int(winner) == match.local_team_id:
+                    print "local"
+                    win = Team.objects.get(id=match.local_team_id)
+                    win.points += 1
+                    lose = Team.objects.get(id=match.visitor_team_id)
+                    lose.points -= 1
+                    match.winner = winner
+                    win.save()
+                    lose.save()
+                    match.save()
+                else:
+                    print "visitor"
+                    win = Team.objects.get(id=match.visitor_team_id)
+                    win.points += 1
+                    lose = Team.objects.get(id=match.local_team_id)
+                    lose.points -= 1
+                    match.winner = winner
+                    win.save()
+                    lose.save()
+                    match.save()
+        except:
+            print "Error", sys.exc_info()
+            raise
+        reclamation.solved = True
+        reclamation.result = resolution
+        reclamation.save()
+        return HttpResponseRedirect('/referee/')
+    else:
+        return HttpResponse('Incorrect')
+
