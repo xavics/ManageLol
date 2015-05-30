@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" data-ng-app="manager">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Lol Weekend Competition</title>
+    {% load staticfiles %}
+{#    <script src="{% static 'Manager/app.js' %}" />#}
+{#    <link rel="stylesheet" type="text/css" href="{% static 'Manager/stylesheet.css' %}" />#}
+    <!-- Bootstrap core CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<style>
+    html, body, .container {
+        height: 100%;
+    }
+    
+    body{
+{#        background-color: #45484d;#}
+    }
+
+
+    .container {
+        display: table;
+        vertical-align: middle;
+    }
+    .vertical-center-row {
+        display: table-cell;
+        vertical-align: middle;
+    }
+    h2{
+        font-size: 2em;
+        color: #036;
+        padding: 0;
+        margin-top: 4px;
+        margin-bottom: 8px;
+        font-weight: normal;
+    }
+    h3{
+        font-size: 1.6em;
+        color: #036;
+        padding: 0;
+        margin-top: 4px;
+        margin-bottom: 4px;
+        font-weight: normal;
+    }
+</style>
+<body>
+<nav class="navbar navbar-default" role="navigation">
+	<!-- Brand and toggle get grouped for better mobile display -->
+	<div class="navbar-header">
+		<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+			<span class="sr-only">Toggle navigation</span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+		</button>
+		<a class="navbar-brand" href="{% url 'main' %}">Home</a>
+	</div>
+
+	<!-- Collect the nav links, forms, and other content for toggling -->
+	<div class="collapse navbar-collapse navbar-ex1-collapse">
+		<ul class="nav navbar-nav navbar-right">
+			<li><a href="{% url 'logout' %}">Log out</a></li>
+		</ul>
+	</div><!-- /.navbar-collapse -->
+</nav>
+<div class="container">
+    <div class="row vertical-center-row">
+        <div id="box" style="border:solid lightskyblue; border-radius: 5px;" class="col-lg-12">
+            <div class="row">
+                <div id="list_r" class="col-lg-4" style="overflow: auto">
+                    {% if reclamations %}
+                    {% for reclamation in reclamations %}
+                    <div class="row" onclick="show_reclamation('{{ reclamation.id }}','{{ reclamation.match.id }}','{{ reclamation.match.winner }}','{{ reclamation.team.name }}','{{ reclamation.match.local_team.name }}','{{ reclamation.match.local_team.id }}', '{{ reclamation.match.visitor_team.name }}', '{{ reclamation.match.visitor_team.id }}','{{ reclamation.description }}');" style="cursor: pointer;border: solid lightgrey; border-radius: 5px">
+                        <div class="col-lg-12">
+                            <h2>Reclamation #{{ reclamation.id }}</h2>
+                            <h3>Match #{{ reclamation.match.id }}</h3>
+                            <h3>Complaiant: {{ reclamation.team.id }}</h3>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                        <h2>No reclamations!</h2>
+                    {% endif %}
+                </div>
+                <div id="show" class="col-lg-8" style="height: ; overflow: auto">
+                    <form id="text_reclamation" action="" method="post" role="form">
+                        {% csrf_token %}
+                    	<legend>
+                            <span style="float: right;">
+                                <button type="button" onclick="close_form()" class="btn btn-danger">Close</button>
+                            </span>
+                            <h1 id="r_id"></h1>
+                        </legend>
+                        <div class="col-lg-6">
+                            <h3 id="m_id"></h3>
+                        </div>
+                        <div class="col-lg-6">
+                            <h3 id="winner"></h3>
+                        </div>
+                        <div class="col-lg-6">
+                            <h3 id="r_team_l"></h3>
+                        </div>
+                        <div class="col-lg-6">
+                            <h3 id="r_team_v"></h3>
+                        </div>
+                        <div class="col-lg-12">
+                            <label for="description" style="margin-top: 10px">Description</label>
+                            <p id="description" style="padding: 5px; font-size: large"></p>
+                        </div>
+                        <div class="col-lg-12">
+                            <div class="form-group">
+                                <label for="winner_sel">Winner</label>
+                                <select style="" class="form-control" name="winner" id="winner_sel">
+                                </select>
+                                <label for="comments">Comments</label>
+                                <textarea id="textarea" class="form-control" name="comments" maxlength="200" rows="2" placeholder="Comments..."></textarea>
+                                <br>
+                            </div>
+                            <a type="button" onclick="submit()" class="btn btn-primary btn-lg">Resolve</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#text_reclamation').hide()
+        $('#list_r').height($(window).height()/1.2)
+    });
+    function show_reclamation(r_id, m_id, winner, name_comp, local, local_id, visitor, visitor_id, descript){
+        if(local_id == winner){
+            var winner_name = local;
+        }else{
+            var winner_name = visitor;
+        }
+        $('#r_id').text("Reclamation #"+r_id);
+        $('#m_id').html("Complaiant: <span style='color:black;'>"+name_comp+"</span>");
+        $('#winner').html("Winner: <span style='color:black;'>"+winner_name+"</span>");
+        $('#r_team_l').html("Local: <span style='color:black;'>"+local+"</span>");
+        $('#r_team_v').html("Visitor: <span style='color:black;'>"+visitor+"</span>");
+        $('#description').text(descript);
+        $('#winner_sel').html("<option selected='true' value='default' >-----</option>"+
+                                "<option value='"+local_id+"'>"+local+"</option>"+
+                                "<option value='"+visitor_id+"'>"+visitor+"</option>")
+        $('#text_reclamation').attr('action',"{% url 'resolve_reclamation' 1 %}".replace(1,r_id))
+        $('#text_reclamation').show()
+    }
+    function close_form(){
+        document.getElementById('text_reclamation').reset();
+        $('#text_reclamation').hide()
+    }
+    function submit(){
+        if ($('#winner_sel').val() == 'default'){
+            alert("Chosing a winner is mandatory")
+        }else{
+            $('#text_reclamation').submit()
+        }
+    }
+</script>
+</body>
+</html>

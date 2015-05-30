@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <div class="row vertical-center-row">
+        <div class="col-lg-12">
+            <div class="row ">
+                <div class="col-md-4 col-md-offset-4 col-sm-4 col-sm-offset-4 col-xs-4 col-xs-offset-4">
+                    <form action=" " method="post" role="form" style="background-color: white; padding: 15px;">
+                        {% csrf_token %}
+                    	<legend>Log in </legend>
+
+                    	<div class="form-group">
+                    		<label for=""></label>
+                    		<input type="text" class="form-control" name="name" id="" placeholder="name...">
+                    		<input type="password" class="form-control" name="password" id="" placeholder="password...">
+                    	</div>
+                    	<button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
