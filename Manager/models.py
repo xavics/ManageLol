@@ -178,3 +178,7 @@ class Reclamation(models.Model):
     def resolve(self, result):
         self.solved = True
         self.result = result
+
+class Competition(models.Model):
+    state = models.CharField(max_length=10)
+    is_active = models.BooleanField(default=True)

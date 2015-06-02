@@ -43,17 +43,27 @@
 <nav class="navbar navbar-default navbar-static-top" role="navigation">
 	<a class="navbar-brand" href="{% url 'main' %}">Competition</a>
 	<ul class="nav navbar-nav">
-        <li>
-            <a class="active" href="http://euw.leagueoflegends.com/">Lol website</a>
+        <li class="active">
+            <a href="http://euw.leagueoflegends.com/">Lol website</a>
         </li>
+        {% if not user.is_authenticated %}
+            <li>
+                <a href="/a_ref">Referee zone</a>
+            </li>
+            <li>
+                <a href="/admin">Admin zone</a>
+            </li>
+        {% endif %}
 	</ul>
 	<div class="collapse navbar-collapse navbar-ex1-collapse">
-        <ul class="nav navbar-nav navbar-right">
+        <ul class="nav navbar-nav navbar-right" style="margin-right: 10px">
             {% if user.is_authenticated %}
-                {% if not user.is_referee %}
-                    <li>
-                        <a href="{% url 'game' %}">Game</a>
-                    </li>
+                {% if not user.is_referee and not user.is_admin %}
+                    {% if state_inscriptions == 'Close' %}
+                        <li>
+                            <a href="{% url 'game' %}">Game</a>
+                        </li>
+                    {% endif %}
                     <li>
                         <a href="/team/{{ user }}">Team</a>
                     </li>

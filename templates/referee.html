@@ -64,7 +64,7 @@
 			<span class="icon-bar"></span>
 			<span class="icon-bar"></span>
 		</button>
-		<a class="navbar-brand" href="{% url 'main' %}">Home</a>
+		<a class="navbar-brand" href="{% url 'referee' %}">Home</a>
 	</div>
 
 	<!-- Collect the nav links, forms, and other content for toggling -->
@@ -81,7 +81,8 @@
                 <div id="list_r" class="col-lg-4" style="overflow: auto">
                     {% if reclamations %}
                     {% for reclamation in reclamations %}
-                    <div class="row" onclick="show_reclamation('{{ reclamation.id }}','{{ reclamation.match.id }}','{{ reclamation.match.winner }}','{{ reclamation.team.name }}','{{ reclamation.match.local_team.name }}','{{ reclamation.match.local_team.id }}', '{{ reclamation.match.visitor_team.name }}', '{{ reclamation.match.visitor_team.id }}','{{ reclamation.description }}');" style="cursor: pointer;border: solid lightgrey; border-radius: 5px">
+{#                    <div class="row" onclick="text_reclamation.show()" style="cursor: pointer;border: solid lightgrey; border-radius: 5px;">#}
+                    <div class="row" onclick="show_reclamation('{{ reclamation.id }}','{{ reclamation.match.id }}','{{ reclamation.match.winner }}','{{ reclamation.team.name }}','{{ reclamation.match.local_team.name }}','{{ reclamation.match.local_team.id }}', '{{ reclamation.match.visitor_team.name }}', '{{ reclamation.match.visitor_team.id }}','{{ reclamation.description }}')" style="cursor: pointer;border: solid lightgrey; border-radius: 5px;">
                         <div class="col-lg-12">
                             <h2>Reclamation #{{ reclamation.id }}</h2>
                             <h3>Match #{{ reclamation.match.id }}</h3>
@@ -93,7 +94,7 @@
                         <h2>No reclamations!</h2>
                     {% endif %}
                 </div>
-                <div id="show" class="col-lg-8" style="height: ; overflow: auto">
+                <div id="show" class="col-lg-8" style="overflow: auto">
                     <form id="text_reclamation" action="" method="post" role="form">
                         {% csrf_token %}
                     	<legend>
@@ -140,10 +141,11 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#text_reclamation').hide()
+        $('#text_reclamation').hide();
         $('#list_r').height($(window).height()/1.2)
     });
     function show_reclamation(r_id, m_id, winner, name_comp, local, local_id, visitor, visitor_id, descript){
+        alert('gvadsgasdbjhasdhjbasdbjh');
         if(local_id == winner){
             var winner_name = local;
         }else{
@@ -154,7 +156,7 @@
         $('#winner').html("Winner: <span style='color:black;'>"+winner_name+"</span>");
         $('#r_team_l').html("Local: <span style='color:black;'>"+local+"</span>");
         $('#r_team_v').html("Visitor: <span style='color:black;'>"+visitor+"</span>");
-        $('#description').text(descript);
+        $('#description').html(descript.replace("\n","<br>"));
         $('#winner_sel').html("<option selected='true' value='default' >-----</option>"+
                                 "<option value='"+local_id+"'>"+local+"</option>"+
                                 "<option value='"+visitor_id+"'>"+visitor+"</option>")

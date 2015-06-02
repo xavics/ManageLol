@@ -5,9 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from Manager.Forms import TeamForm, PlayerForm
 from django.contrib.auth import authenticate, login, logout
-from models import Team, Player, Rounds, Match, League, Notice, Reclamation
+from models import Team, Player, Rounds, Match, League, Notice, Reclamation, Competition
 import Riot
-from Manager.prova import make_random_statistics
+from Manager.prova import close_inscriptions, make_random_statistics
 import json
 from itertools import chain
 from operator import attrgetter, itemgetter
@@ -17,12 +17,14 @@ from datetime import datetime
 import ast
 import sys
 from django.contrib.auth.decorators import user_passes_test
+from Manager.prova import time_competition
+
 
 def group_required(*group_names):
     """Requires user membership in at least one of the groups passed in."""
     def in_groups(u):
         if u.is_authenticated():
-            if bool(u.group.filter(name__in=group_names)) | u.is_admin:
+            if bool(u.group.filter(name__in=group_names)):
                 return True
         return False
     return user_passes_test(in_groups, redirect_field_name='', login_url='/')
@@ -35,14 +37,8 @@ def mainpage(request):
     player_form = PlayerForm()
     servers = Riot.get_servers_stats()
     notices = Notice.objects.all()
-    closing = datetime(2015, 05, 29, 19, 45, 00)
-    now = datetime.now()
-    if (closing - now).days >= 0:
-        registers = "open"
-    else:
-        registers = 'closed'
     return render(request, 'Main.html', {'team_form': team_form, 'player_form': player_form,'servers':servers,
-                                         'notices': notices, 'registers': registers, 'close_date':closing})
+                                         'notices': notices, 'close_date': time_competition})
 
 def register(request):
     if request.method == 'POST':
@@ -55,7 +51,7 @@ def register(request):
             email = myDict['email'][n]
             print name, email
             if not Riot.is_riot_user(name, email):
-                return HttpResponseRedirect('/alert/')
+                return HttpResponse("Player "+name+" is not in the db of riot")
             role = myDict['role'][n]
             print role
             player = Player(name=name, email=email, role=role)
@@ -67,6 +63,9 @@ def register(request):
         team.save()
         team.set_password(myDict['password'][0])
         team.save()
+        group = Group.objects.get(name='Team')
+        team.group.add(group)
+        team.save()
         for player in players:
             player.set_team(team)
             player.save()
@@ -77,7 +76,7 @@ def register(request):
         if team:
             if team.is_active:
                 login(request, team)
-                return HttpResponseRedirect('/team/')
+                return HttpResponseRedirect('/team/'+team_name)
             else:
                 return HttpResponse("Your account is disabled")
         else:
@@ -109,18 +108,26 @@ def login_view(request):
     else:
         return render(request, 'Login.html', {})
 
+@group_required('Team')
 def team(request, name):
     players = Player.objects.filter(team=request.user)
-    league = sorted(request.user.league.get_teams(), key=itemgetter('points','dead'), reverse=True)
-    all_matches = Match.objects.filter(Q(local_team=request.user) | Q(visitor_team=request.user))
-    matches = sorted(all_matches, key=attrgetter('round.data'))
+    # if state_inscriptions == "Close":
+    if Competition.objects.get(id=1).state == "Close":
+        league = sorted(request.user.league.get_teams(), key=itemgetter('points','dead'), reverse=True)
+        all_matches = Match.objects.filter(Q(local_team=request.user) | Q(visitor_team=request.user))
+        matches = sorted(all_matches, key=attrgetter('round.data'))
     options = Player.ROLES
     options_ = []
     for option in options:
         options_.append({'val':option[0],'txt':option[1]})
     player_form = PlayerForm()
-    return render(request, 'pagina_team.html', {'players': players, 'classification': league, 'matches': matches,
+    print Competition.objects.get(id=1).state
+    # if state_inscriptions == "Close":
+    if Competition.objects.get(id=1).state == "Close":
+        return render(request, 'pagina_team.html', {'players': players, 'classification': league, 'matches': matches,
                                                 'player_form':player_form, 'options': options_})
+    else:
+        return render(request, 'pagina_team.html', {'players': players, 'options': options_})
 
 def user_logout(request):
     logout(request)
@@ -170,15 +177,14 @@ def reclamation(request):
         complaient = request.POST.get('complaient')
         print type(match_id), match_id, type(description), description, type(complaient), complaient
         match = Match.objects.get(id=int(match_id))
-        print match
         complaient_en = Team.objects.get(id=int(complaient))
-        print complaient_en
+        print description
+        print str(description).replace("", "\n")
         try:
             reclam = Reclamation(match=match, description=str(description), team=complaient_en)
         except:
             print "Creating Error", sys.exc_info()
             raise
-        print "pass"
         try:
             reclam.save()
         except:
@@ -236,7 +242,6 @@ def auth_ref(request):
         return render(request, 'referee_log.html', {})
     if request.method == 'POST':
         team = authenticate(username=request.POST['name'], password=request.POST['password'])
-        print team.group.filter(name='Referee')
         if bool(team.group.filter(name='Referee')):
             if team:
                 if team.is_active and team.is_referee:
@@ -261,11 +266,11 @@ def resolve_reclamation(request,id):
         winner = request.POST['winner']
         comments = request.POST['comments']
         resolution = "{'referee':"+str(request.user)+",'winner':"+str(winner)+",'comments':"+str(comments)+"}"
-        reclamation = Reclamation.objects.get(id=id);
+        reclamation = Reclamation.objects.get(id=id)
         try:
             match = Match.objects.get(id=reclamation.match_id)
             print str(winner)+"    /  "+str(match.winner)
-            if(winner != match.winner):
+            if winner != match.winner:
                 if int(winner) == match.local_team_id:
                     print "local"
                     win = Team.objects.get(id=match.local_team_id)
@@ -296,3 +301,6 @@ def resolve_reclamation(request,id):
     else:
         return HttpResponse('Incorrect')
 
+def close_registers(request):
+    close_inscriptions()
+    return HttpResponseRedirect('/admin')

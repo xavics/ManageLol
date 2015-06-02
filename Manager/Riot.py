@@ -1,38 +1,15 @@
 import json
 import smtplib
 import requests
-import datetime
 
 # For Program
-# with open('Manager/riotdatabase.json') as data_file:
-#     data = json.load(data_file)
+with open('Manager/riotdatabase.json') as data_file:
+    data = json.load(data_file)
 
-# For debugging
-# with open('riotdatabase.json') as data_file:
-#     data = json.load(data_file)
 
 # For Program
-# with open('Manager/top_25.json') as data_file:
-#     data_top = json.load(data_file)
-
-
-def make_db_inserts():
-    f = open('db_in','w+')
-    for x in range(24):
-        if x != 0:
-            st_x = str(x)
-            data = str(datetime.datetime.now())
-            team_name = "t"+st_x
-            values = "'"+st_x+"','xxx','"+data+"','"+team_name+"',0,'mailo','','False','False'"
-            f.write("insert into Manager_team values("+values+");\n")
-            x_p = (x-1)*5
-            for y in range(6):
-                if y != 0:
-                    p_id = str(x_p+y)
-                    player_n = "p"+p_id
-                    mail_p = player_n+"@mail.com"
-                    values_p = "'"+p_id+"','"+player_n+"','"+mail_p+"','False','SU','"+st_x+"'"
-                    f.write("insert into Manager_player values("+values_p+");\n")
+with open('Manager/top_25.json') as data_file:
+    data_top = json.load(data_file)
 
 
 def is_riot_user(name, email):
@@ -95,6 +72,3 @@ def get_servers_stats():
 
 def get_ip():
     return requests.get(url="http://localhost:3333").json()['generated-ip']
-
-if __name__ == '__main__':
-    make_db_inserts()

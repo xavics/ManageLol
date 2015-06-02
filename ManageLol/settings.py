@@ -68,6 +68,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.tz",
     "django.contrib.messages.context_processors.messages",
     "django.core.context_processors.request",
+    "Manager.context_processor.competition_state",
 )
 
 ROOT_URLCONF = 'ManageLol.urls'
@@ -81,7 +82,7 @@ WSGI_APPLICATION = 'ManageLol.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'dbManager'),
     }
 }
 
@@ -107,4 +108,11 @@ MEDIA_URL = '/media/'
 
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR,  'templates'),
+)
+
+TEMPLATE_LOADERS = (
+
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+
 )

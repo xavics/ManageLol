@@ -3,13 +3,23 @@ import datetime
 from random import randint, getrandbits
 import json
 from ManageLol import settings
-from Manager.models import Team, League, Rounds, Match, Statistics, Player, Reclamation
+from Manager.models import Team, League, Rounds, Match, Statistics, Player, Reclamation, Competition
 from rest_framework_xml.renderers import XMLRenderer
 from xml.dom.minidom import parseString
 from Riot import send_confimation_email
-from django.contrib.auth.models import Group
-# import copy
 import dicttoxml
+
+
+time_competition = datetime.datetime.now()
+
+
+def set_time_closing_inscriptions(y, m, d, h, min, s):
+    time_limit = datetime.datetime(y, m, d, h, min, s)
+    if time_limit < datetime.datetime.now():
+        return "Incorrect time"
+    global time_competition
+    time_competition = time_limit
+
 
 def distribucio(num):
     list = []
@@ -149,12 +159,16 @@ def genhorari(leagues):
 # print horari
 
 def generate_leagues():
-    num = Team.objects.count()
+    num = Team.objects.filter(is_admin=False, is_referee=False).count()
     distr = distribucio(num)
-    teams = Team.objects.all().values_list('name', flat=True)
+    teams = Team.objects.filter(is_admin=False, is_referee=False).values_list('name', flat=True)
+    print teams
+    if len(teams) <= 1:
+        return "Insuficient number of teams"
     team_list = []
     for team in teams:
         team_list.append(team)
+        print team_list
     leagues = fillleagues(team_list, distr)
     for league in leagues:
         entry_league = League(id=league)
@@ -183,10 +197,10 @@ def generate_competition(leagues):
                     hora_mod = horari-24-1
                 else:
                     hora_mod = horari-24
-                data = datetime.datetime(2015, 5, 30, hora_mod)
+                data = datetime.datetime(2015, 6, 2, hora_mod)
             else:
                 # data = "Dissabte"
-                data = datetime.datetime(2015, 5, 31, horari)
+                data = datetime.datetime(2015, 6, 2, horari)
             # if horari < 10:
             #     hora = "0"+str(hora_mod)+":00"
             # else:
@@ -233,21 +247,6 @@ def make_random_statistics(match_id):
     statistics_visitor.save()
     statistics_local.save()
 
-def resoldre_reclamacio(id):
-    reclamation = Reclamation.objects.get(id=id)
-    # if bool(getrandbits(1)):
-    #     winner = match.local_team.id
-    #     local = Team.objects.get(id=match.local_team.id)
-    #     local.points += 1
-    #     local.save()
-    # else:
-    #     winner = match.visitor_team.id
-    #     visitor = Team.objects.get(id=match.visitor_team.id)
-    #     visitor.points += 1
-    #     visitor.save()
-    # recl
-
-
 def round_statistics(id):
     structure_en = Rounds.objects.get(id=id)
     structure = structure_en.get_as_dict()
@@ -257,45 +256,28 @@ def round_statistics(id):
     send_confimation_email("xacosa@gmail.com", data)
     return dom.toprettyxml()
 
-def make_admin():
-    team = Team(name='admin', is_admin=True)
-    team.save()
-    team.set_password('admin')
-    team.save()
 
-def make_referee(name, password):
-    team = Team(name=name, is_referee=True)
-    team.save()
-    team.set_password(password)
-    team.save()
-    referee_g = Group.objects.get(name='Referee')
-    team.group.add(referee_g)
-
-
-def close_registers():
+import django
+def close_inscriptions():
+    django.setup()
     leagues = generate_leagues()
     generate_competition(leagues)
+    state = Competition.objects.get(id=1)
+    state.state = "Close"
+    state.save()
 
 
-def make_enable_team(team):
-    team = Team.objects.get(name=team)
-    team.set_password("xxx")
-    team.save()
+def open_inscriptions():
+    state = Competition.objects.get(id=1)
+    state.state = "Open"
+    state.save()
 
-def create_groups():
-    team_g = Group.objects.create(name='Team')
-    referee_g = Group.objects.create(name='Referee')
-    auth_g = Group.objects.create(name='Admin')
 
-if __name__ == '__main__':
-    # close_registers()
-    # create_groups()
-    # make_referee("ref1","xxx")
-    team = Team.objects.get(id=1)
-    print team.group
-    referee_g = Group.objects.get(name='Referee')
-    referee_g.team_set.add(team)
-    team.group.add(referee_g)
-    team.save()
-    # make_admin()
-    # make_enable_team("t1")
+def close_competition():
+    state = Competition.objects.get(id=1)
+    state.is_active = False
+    state.save()
+
+# if __name__ == '__main__':
+
+

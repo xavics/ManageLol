@@ -4,7 +4,6 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', 'Manager.views.mainpage', name='main'),
     # url(r'^$', 'Manager.views.base', name='base'),
@@ -17,9 +16,10 @@ urlpatterns = patterns('',
     url(r'^login','Manager.views.login_view', name='login'),
     url(r'^set_ip','Manager.views.set_ip', name='set_ip'),
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.BASE_DIR+'/TwitApp'+settings.MEDIA_URL}),
-    # url(r'^logout', 'Manager.views.logout', name='logout'),
-    url(r'^logout', 'django.contrib.auth.views.logout', { 'next_page': '/'}),
+    url(r'^logout', 'Manager.views.user_logout', name='logout'),
+    # url(r'^logout', 'django.contrib.auth.views.logout', { 'next_page': '/'}),
     url(r'^a_ref', 'Manager.views.auth_ref', name='auth_ref'),
     url(r'^referee', 'Manager.views.referee', name='referee'),
     url(r'^resolve/(\w+)/$', 'Manager.views.resolve_reclamation', name='resolve_reclamation'),
+    url(r'^close_registers', 'Manager.views.close_registers', name='close_registers'),
 )

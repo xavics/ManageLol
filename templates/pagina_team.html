@@ -100,134 +100,143 @@
 {#            </div>#}
         </div>
     </div>
-    <div id="classifications" class="row">
-        <div id="team_row" class="col-lg-offset-2 col-lg-8">
-            <h1>Classification</h1>
-            <div class="row">
-                <div class="col-lg-3 col-sm-6">
-                    Team
-                </div>
-                <div class="col-lg-3 col-sm-6">
-                    Points
-                </div>
-                <div class="col-lg-3 col-sm-6">
-                    Deads
-                </div>
-                <div class="col-lg-3 col-sm-6">
-                    Killed
-                </div>
-            </div>
-            {% for team in classification %}
-                {% if team.name == user.name %}
-                    <div  class="row" style="color: red">
-                        <div class="col-lg-3 col-sm-6" >
-                            {{ team.name }}
-                        </div>
-                        <div class="col-lg-3 col-sm-6">
-                            {{ team.points }}
-                        </div>
-                        <div class="col-lg-3 col-sm-6" >
-                            {{ team.dead }}
-                        </div>
-                        <div class="col-lg-3 col-sm-6" >
-                            {{ team.killed }}
-                        </div>
+    {% if state_inscriptions == "Close" %}
+        <div id="classifications" class="row">
+            <div id="team_row" class="col-lg-offset-2 col-lg-8">
+                <h1>Classification</h1>
+                <div class="row">
+                    <div class="col-lg-3 col-sm-6">
+                        Team
                     </div>
-                {% else %}
-                    <div class="row">
-                        <div class="col-lg-3 col-sm-6">
-                            {{ team.name }}
-                        </div>
-                        <div class="col-lg-3 col-sm-6">
-                            {{ team.points }}
-                        </div>
-                        <div class="col-lg-3 col-sm-6">
-                            {{ team.dead }}
-                        </div>
-                        <div class="col-lg-3 col-sm-6">
-                            {{ team.killed }}
-                        </div>
+                    <div class="col-lg-3 col-sm-6">
+                        Points
                     </div>
-                {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-    <div id="match_list" class="row">
-        <div id="team_row" class="col-lg-offset-2 col-lg-8">
-        <h1>MATCHES ({{ matches|length }})</h1>
-            {% for match in matches %}
-                {% if match.winner %}
-                    {% if match.winner == user.id%}
-                        <div class="row" style="background-color: rgba(128,255,0,0.9); border-bottom: solid;">
-                    {% else %}
-                        <div class="row" style="background-color: rgba(255,51,51,0.9); border-bottom: solid;">
-                    {% endif %}
-                            <div class="col-lg-4">
-                                <h2 style="text-align: center">{{ match.winner }}</h2>
+                    <div class="col-lg-3 col-sm-6">
+                        Deads
+                    </div>
+                    <div class="col-lg-3 col-sm-6">
+                        Killed
+                    </div>
+                </div>
+                {% for team in classification %}
+                    {% if team.name == user.name %}
+                        <div  class="row" style="color: red">
+                            <div class="col-lg-3 col-sm-6" >
+                                {{ team.name }}
                             </div>
-                            <div class="col-lg-4">
+                            <div class="col-lg-3 col-sm-6">
+                                {{ team.points }}
+                            </div>
+                            <div class="col-lg-3 col-sm-6" >
+                                {{ team.dead }}
+                            </div>
+                            <div class="col-lg-3 col-sm-6" >
+                                {{ team.killed }}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="row">
+                            <div class="col-lg-3 col-sm-6">
+                                {{ team.name }}
+                            </div>
+                            <div class="col-lg-3 col-sm-6">
+                                {{ team.points }}
+                            </div>
+                            <div class="col-lg-3 col-sm-6">
+                                {{ team.dead }}
+                            </div>
+                            <div class="col-lg-3 col-sm-6">
+                                {{ team.killed }}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <div id="match_list" class="row">
+            <div id="team_row" class="col-lg-offset-2 col-lg-8">
+            <h1>MATCHES ({{ matches|length }})</h1>
+                {% for match in matches %}
+                    {% if match.winner %}
+                        {% if match.winner == user.id%}
+                            <div class="row" style="background-color: rgba(128,255,0,0.9); border-bottom: solid;">
+                        {% else %}
+                            <div class="row" style="background-color: rgba(255,51,51,0.9); border-bottom: solid;">
+                        {% endif %}
+                                <div class="col-lg-4">
+                                    <h2 style="text-align: center">{{ match.winner }}</h2>
+                                </div>
+                                <div class="col-lg-4">
+                                    <h2 style="text-align: center">#{{ match.id }}     Match {{ match.round.id}}</h2>
+                                </div>
+                                <div class="col-lg-4">
+                                    <h2 style="text-align: center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#ReclamationModal" data-match="{{ match.id }}">
+                                            Reclamation
+                                        </button>
+    {#                                    <a match="{{ match.id }}" type="button" onclick="go_to_reclamation(this)" class="btn btn-primary btn-sm">Reclamation</a>#}
+                                    </h2>
+                                </div>
+                    {% else %}
+                        <div class="row" style="border-bottom: solid;">
+                            <div class="col-lg-12">
                                 <h2 style="text-align: center">#{{ match.id }}     Match {{ match.round.id}}</h2>
                             </div>
-                            <div class="col-lg-4">
-                                <h2 style="text-align: center">
-                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#ReclamationModal" data-match="{{ match.id }}">
-                                        Reclamation
-                                    </button>
-{#                                    <a match="{{ match.id }}" type="button" onclick="go_to_reclamation(this)" class="btn btn-primary btn-sm">Reclamation</a>#}
-                                </h2>
+                    {% endif %}
+                            <div class="col-lg-4" style="text-align: center">
+                                <h3>{{ match.round.data|date:"M d, H:i:s" }}</h3>
                             </div>
-                {% else %}
-                    <div class="row" style="border-bottom: solid;">
-                        <div class="col-lg-12">
-                            <h2 style="text-align: center">#{{ match.id }}     Match {{ match.round.id}}</h2>
+                            <div class="col-lg-4" style="text-align: center">
+                                <h3>{{ match.local_team }}</h3>
+                            </div>
+                            <div class="col-lg-4" style="text-align: center">
+                                <h3>{{ match.visitor_team }}</h3>
+                            </div>
                         </div>
-                {% endif %}
-                        <div class="col-lg-4" style="text-align: center">
-                            <h3>{{ match.round.data|date:"M d, H:i:s" }}</h3>
-                        </div>
-                        <div class="col-lg-4" style="text-align: center">
-                            <h3>{{ match.local_team }}</h3>
-                        </div>
-                        <div class="col-lg-4" style="text-align: center">
-                            <h3>{{ match.visitor_team }}</h3>
-                        </div>
-                    </div>
-            {% endfor %}
-        </div>
-        </div>
-<!-- Modal -->
-<div class="modal fade" id="ReclamationModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="ReclamationModalLabel"></h4>
-      </div>
-      <div class="modal-body">
-          <textarea id="textarea" class="form-control" maxlength="250" rows="3" placeholder="Put your insignificant complaints here..."></textarea>
-          <p id="textnumber" class="text-right"></p>
-          <div id="alertCorrect" style="display: none;" class="alert alert-success">
-          	<strong>Succes!</strong> You will see the cahnges if the resolution is accepted ...
+                {% endfor %}
+            </div>
+            </div>
+        <!-- Modal -->
+        <div class="modal fade" id="ReclamationModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="ReclamationModalLabel"></h4>
+              </div>
+              <div class="modal-body">
+                  <textarea id="textarea" class="form-control" maxlength="250" rows="3" placeholder="Put your insignificant complaints here..."></textarea>
+                  <p id="textnumber" class="text-right"></p>
+                  <div id="alertCorrect" style="display: none;" class="alert alert-success">
+                    <strong>Succes!</strong> You will see the cahnges if the resolution is accepted ...
+                  </div>
+                  <div id="alertIncorrect" style="display: none" class="alert alert-danger">
+                    <strong>Error!</strong> Resolution can't be processed now ...
+                  </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" id="SubmitReclamation" onclick="sent_complain('{{ user.id }}')" class="btn btn-primary">Send</button>
+              </div>
+            </div>
           </div>
-          <div id="alertIncorrect" style="display: none" class="alert alert-danger">
-          	<strong>Error!</strong> Resolution can't be processed now ...
-          </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" id="SubmitReclamation" onclick="sent_complain('{{ user.id }}')" class="btn btn-primary">Send</button>
-      </div>
-    </div>
-  </div>
-</div>
+        </div>
+    {% endif %}
 <script>
+    var state_inscriptions;
+
     $(document).ready(function() {
         $('#team_info').show()
         $('#classifications').hide()
         $('#match_list').hide()
         $('#team_edit').hide()
 
+        state_inscriptions = "{{ state_inscriptions }}"
 
+        if(state_inscriptions == "Open"){
+            $('#Button2').addClass('disabled').attr('disabled', true);
+            $('#Button3').addClass('disabled').attr('disabled', true);
+        }
 
         $('#ReclamationModal').on('show.bs.modal', function (event) {
               var button = $(event.relatedTarget);
@@ -286,6 +295,10 @@
         var buttons = $('*[id^="Button"]');
         for(x=0; x<buttons.length; x++) {
             $(buttons[x]).removeClass('disabled').attr('disabled',false);
+        }
+        if(state_inscriptions == "Open"){
+            $('#Button2').addClass('disabled').attr('disabled', true);
+            $('#Button3').addClass('disabled').attr('disabled', true);
         }
     }
 
@@ -385,7 +398,8 @@
 
     function sent_complain(id_team){
         var info = $('#ReclamationModal').find('#r_match_id').text();
-        var description = $('#textarea').val();
+        var description = $('#textarea').val().replace(/\r?\n/g,"\\n");
+        alert(description)
         $.ajax({
             url: '{% url 'reclamation' %}',
             type: 'POST',
