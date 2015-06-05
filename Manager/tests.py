@@ -1,5 +1,5 @@
 from django.test import TestCase
-from Manager.Riot import is_riot_user, send_confimation_email
+from Manager.Riot import is_riot_user, send_email
 
 
 # Create your tests here.
@@ -29,5 +29,5 @@ class RiotTest(TestCase):
         e = Player("HolaAdeu", "Solo")
 
         data = {'players': [a, b, c, d, e], 'team': u'Dignitas'}
-        send_confimation_email("PUT YOUR EMAIL HERE", data)
+        send_email("PUT YOUR EMAIL HERE", data)
 

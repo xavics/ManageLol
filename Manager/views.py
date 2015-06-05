@@ -7,7 +7,7 @@ from Manager.Forms import TeamForm, PlayerForm
 from django.contrib.auth import authenticate, login, logout
 from models import Team, Player, Rounds, Match, League, Notice, Reclamation, Competition
 import Riot
-from Manager.prova import close_inscriptions, make_random_statistics
+from Manager.prova import close_inscriptions, make_random_statistics, make_competition, open_inscriptions, close_compt
 import json
 from itertools import chain
 from operator import attrgetter, itemgetter
@@ -33,12 +33,24 @@ def base(request):
     return render(request, 'prova.html', {})
 
 def mainpage(request):
-    team_form = TeamForm()
-    player_form = PlayerForm()
-    servers = Riot.get_servers_stats()
-    notices = Notice.objects.all()
-    return render(request, 'Main.html', {'team_form': team_form, 'player_form': player_form,'servers':servers,
-                                         'notices': notices, 'close_date': time_competition})
+    if Competition.objects.get(id=1).is_active:
+        team_form = TeamForm()
+        player_form = PlayerForm()
+        servers = Riot.get_servers_stats()
+        notices = Notice.objects.all()
+        return render(request, 'Main.html', {'team_form': team_form, 'player_form': player_form,'servers':servers,
+                                             'notices': notices, 'close_date': time_competition})
+    else:
+        all_leagues = League.objects.all()
+        winners_list = []
+        for league in all_leagues:
+            teams_sorted = sorted(league.get_teams(), key=itemgetter('points','dead'), reverse=True)
+            team_win = Team.objects.get(name=teams_sorted[0]['name'])
+            element = {'league':league.id,'winner':teams_sorted[0]['name'], 'players': Player.objects.filter(team=team_win)}
+            winners_list.append(element)
+        return render(request, 'finished.html', {'winners_list': winners_list})
+
+
 
 def register(request):
     if request.method == 'POST':
@@ -70,7 +82,7 @@ def register(request):
             player.set_team(team)
             player.save()
         data_email = {'type': "confirmation",'team':team_name, 'players':players}
-        Riot.send_confimation_email(team_email, data_email)
+        Riot.send_email(team_email, data_email)
         #log in
         team = authenticate(username=team_name, password=myDict['password'][0])
         if team:
@@ -112,7 +124,7 @@ def login_view(request):
 def team(request, name):
     players = Player.objects.filter(team=request.user)
     # if state_inscriptions == "Close":
-    if Competition.objects.get(id=1).state == "Close":
+    if Competition.objects.get(id=1).generated:
         league = sorted(request.user.league.get_teams(), key=itemgetter('points','dead'), reverse=True)
         all_matches = Match.objects.filter(Q(local_team=request.user) | Q(visitor_team=request.user))
         matches = sorted(all_matches, key=attrgetter('round.data'))
@@ -123,7 +135,7 @@ def team(request, name):
     player_form = PlayerForm()
     print Competition.objects.get(id=1).state
     # if state_inscriptions == "Close":
-    if Competition.objects.get(id=1).state == "Close":
+    if Competition.objects.get(id=1).generated:
         return render(request, 'pagina_team.html', {'players': players, 'classification': league, 'matches': matches,
                                                 'player_form':player_form, 'options': options_})
     else:
@@ -303,4 +315,16 @@ def resolve_reclamation(request,id):
 
 def close_registers(request):
     close_inscriptions()
+    return HttpResponseRedirect('/admin')
+
+def open_registers(request):
+    open_inscriptions()
+    return HttpResponseRedirect('/admin')
+
+def generate_competition(request):
+    make_competition()
+    return HttpResponseRedirect('/admin')
+
+def close_competition(request):
+    close_compt()
     return HttpResponseRedirect('/admin')

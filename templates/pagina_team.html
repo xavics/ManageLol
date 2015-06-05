@@ -100,7 +100,7 @@
 {#            </div>#}
         </div>
     </div>
-    {% if state_inscriptions == "Close" %}
+    {% if competition_generated %}
         <div id="classifications" class="row">
             <div id="team_row" class="col-lg-offset-2 col-lg-8">
                 <h1>Classification</h1>
@@ -223,7 +223,7 @@
         </div>
     {% endif %}
 <script>
-    var state_inscriptions;
+    var competition_generated;
 
     $(document).ready(function() {
         $('#team_info').show()
@@ -231,9 +231,9 @@
         $('#match_list').hide()
         $('#team_edit').hide()
 
-        state_inscriptions = "{{ state_inscriptions }}"
+        competition_generated = "{{ competition_generated }}"
 
-        if(state_inscriptions == "Open"){
+        if(competition_generated == "False"){
             $('#Button2').addClass('disabled').attr('disabled', true);
             $('#Button3').addClass('disabled').attr('disabled', true);
         }
@@ -296,7 +296,7 @@
         for(x=0; x<buttons.length; x++) {
             $(buttons[x]).removeClass('disabled').attr('disabled',false);
         }
-        if(state_inscriptions == "Open"){
+        if(competition_generated == "False"){
             $('#Button2').addClass('disabled').attr('disabled', true);
             $('#Button3').addClass('disabled').attr('disabled', true);
         }

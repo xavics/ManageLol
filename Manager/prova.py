@@ -6,8 +6,9 @@ from ManageLol import settings
 from Manager.models import Team, League, Rounds, Match, Statistics, Player, Reclamation, Competition
 from rest_framework_xml.renderers import XMLRenderer
 from xml.dom.minidom import parseString
-from Riot import send_confimation_email
+from Riot import send_email
 import dicttoxml
+from operator import attrgetter, itemgetter
 
 
 time_competition = datetime.datetime.now()
@@ -252,19 +253,59 @@ def round_statistics(id):
     structure = structure_en.get_as_dict()
     xml = dicttoxml.dicttoxml(structure)
     dom = parseString(xml)
-    data = {'type':"xml", 'id':id, 'text':dom.toprettyxml() }
-    send_confimation_email("xacosa@gmail.com", data)
+    data = {'type':"xml_ronda", 'id':id, 'text':dom.toprettyxml() }
+    send_email("xacosa@gmail.com", data)
     return dom.toprettyxml()
 
+def send_inscriptions_info():
+    count_teams = Team.objects.filter(is_admin=False, is_referee=False).count()
+    teams = []
+    for team in Team.objects.filter(is_admin=False, is_referee=False):
+        teams.append(team.get_as_dict())
+    structure = {'count': count_teams, 'Teams': teams}
+    xml = dicttoxml.dicttoxml(structure)
+    dom = parseString(xml)
+    data = {'type':"xml_inscript", 'id':id, 'text':dom.toprettyxml() }
+    send_email("xacosa@gmail.com", data)
+    return dom.toprettyxml()
+
+def send_winners():
+    count_leagues = League.objects.count()
+    all_leagues = League.objects.all()
+    winners_list = []
+    for league in all_leagues:
+        teams_sorted = sorted(league.get_teams(), key=itemgetter('points','dead'), reverse=True)
+        team_win = Team.objects.get(name=teams_sorted[0]['name'])
+        player_team = []
+        for player in Player.objects.filter(team=team_win):
+            item = {'name':player.name}
+            player_team.append(item)
+        element = {'league':league.id,'winner':teams_sorted[0]['name'], 'players': player_team}
+        winners_list.append(element)
+    structure = {'count': count_leagues, 'Teams': winners_list}
+    xml = dicttoxml.dicttoxml(structure)
+    dom = parseString(xml)
+    data = {'type':"xml_winner", 'id':id, 'text':dom.toprettyxml() }
+    # Aki enviariem a riot i a laltre de marketing
+    send_email("xacosa@gmail.com", data)
+    return dom.toprettyxml()
 
 import django
 def close_inscriptions():
+    # django.setup()
+    state = Competition.objects.get(id=1)
+    state.state = "Close"
+    state.save()
+
+
+def make_competition():
     django.setup()
     leagues = generate_leagues()
     generate_competition(leagues)
     state = Competition.objects.get(id=1)
-    state.state = "Close"
+    state.generated = True
     state.save()
+    send_inscriptions_info()
 
 
 def open_inscriptions():
@@ -273,11 +314,10 @@ def open_inscriptions():
     state.save()
 
 
-def close_competition():
+def close_compt():
     state = Competition.objects.get(id=1)
     state.is_active = False
     state.save()
+    send_winners()
 
 # if __name__ == '__main__':
-
-

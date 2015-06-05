@@ -69,6 +69,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.messages.context_processors.messages",
     "django.core.context_processors.request",
     "Manager.context_processor.competition_state",
+    "Manager.context_processor.competition_active",
+    "Manager.context_processor.competition_generated",
 )
 
 ROOT_URLCONF = 'ManageLol.urls'

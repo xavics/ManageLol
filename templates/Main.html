@@ -6,7 +6,7 @@
         <div class="form-horizontal" ng-controller="FormsCtrl" role="form">
             <div class="form-group">
                 <div class="col-sm-8 col-sm-offset-2">
-                    {% if state_inscriptions == 'Open' %}
+                    {% if competition_state == 'Open' %}
                     <div class="col-lg-offset-3">
                         <span style="font-size: x-large; color: orangered;">
                             Registers will close at {{ close_date }}
@@ -20,7 +20,7 @@
                     </div>
                     {% endif %}
                     </div>
-                    {% if state_inscriptions == 'Open' %}
+                    {% if competition_state == 'Open' %}
                     <div class="btn-group"style="float: right; margin-right: 10px">
                             <a type="button" data-ng-click="change_form()" ng-value="name_form" class="btn btn-warning btn-lg">
                                 {[{ name_form }]}
@@ -110,7 +110,7 @@
     $(function(){
         $('#server_stats').hide();
         $('#notices').hide();
-        registers = "{{ state_inscriptions }}";
+        registers = "{{ competition_state }}";
     });
 
     var app = angular.module('manager',['ngSanitize']).config(function($interpolateProvider){
@@ -136,7 +136,7 @@
 
 
     app.controller('FormsCtrl', ['$scope','$http', '$sce', '$compile', function($scope, $http, $sce,$compile) {
-        var registers = "{{ state_inscriptions }}";
+        var registers = "{{ competition_state }}";
         if(registers == 'Open') {
             $scope.is_visible = false;
             $scope.name_form = "Log in";

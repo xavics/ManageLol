@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
+{#    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">#}
     <title>Lol Weekend Competition</title>
     {% load staticfiles %}
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'Manager/pictures/favicon.ico' %}">
 {#    <script src="{% static 'Manager/app.js' %}" />#}
     <link rel="stylesheet" type="text/css" href="{% static 'Manager/stylesheet.css' %}" />
     <!-- Bootstrap core CSS -->
@@ -40,53 +42,60 @@
     <![endif]-->
 </head>
 <body>
-<nav class="navbar navbar-default navbar-static-top" role="navigation">
-	<a class="navbar-brand" href="{% url 'main' %}">Competition</a>
-	<ul class="nav navbar-nav">
-        <li class="active">
-            <a href="http://euw.leagueoflegends.com/">Lol website</a>
-        </li>
-        {% if not user.is_authenticated %}
-            <li>
-                <a href="/a_ref">Referee zone</a>
+{% if competition_active %}
+    <nav class="navbar navbar-default navbar-static-top" role="navigation">
+        <a class="navbar-brand" href="{% url 'main' %}">Competition</a>
+        <ul class="nav navbar-nav">
+            <li class="active">
+                <a href="http://euw.leagueoflegends.com/">Lol website</a>
             </li>
-            <li>
-                <a href="/admin">Admin zone</a>
-            </li>
-        {% endif %}
-	</ul>
-	<div class="collapse navbar-collapse navbar-ex1-collapse">
-        <ul class="nav navbar-nav navbar-right" style="margin-right: 10px">
-            {% if user.is_authenticated %}
-                {% if not user.is_referee and not user.is_admin %}
-                    {% if state_inscriptions == 'Close' %}
-                        <li>
-                            <a href="{% url 'game' %}">Game</a>
-                        </li>
-                    {% endif %}
-                    <li>
-                        <a href="/team/{{ user }}">Team</a>
-                    </li>
-                {% endif %}
-                    <li>
-                        <a href="{% url 'logout' %}">Log out</a>
-                    </li>
-            {% else %}
-                <li class="active">
-                    <a href="{% url 'main' %}">Register/Log in</a>
+            {% if not user.is_authenticated %}
+                <li>
+                    <a href="/a_ref">Referee zone</a>
+                </li>
+                <li>
+                    <a href="/admin">Admin zone</a>
                 </li>
             {% endif %}
         </ul>
-	</div><!-- /.navbar-collapse -->
-</nav>
-<!-- Bootstrap core JavaScript
-================================================== -->
-<!-- Placed at the end of the document so the pages load faster -->
-<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-{% block content %}
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav navbar-right" style="margin-right: 10px">
+                {% if user.is_authenticated %}
+                    {% if not user.is_referee and not user.is_admin %}
+                        {% if state_inscriptions == 'Close' %}
+                            <li>
+                                <a href="{% url 'game' %}">Game</a>
+                            </li>
+                        {% endif %}
+                        <li>
+                            <a href="/team/{{ user }}">Team</a>
+                        </li>
+                    {% endif %}
+                        <li>
+                            <a href="{% url 'logout' %}">Log out</a>
+                        </li>
+                {% else %}
+                    <li class="active">
+                        <a href="{% url 'main' %}">Register/Log in</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </nav>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    {% block content %}
 
-{% endblock %}
+    {% endblock %}
+{% else %}
+    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    {% block finish_content %}
+    {% endblock %}
+{% endif %}
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 </body>
 </html>

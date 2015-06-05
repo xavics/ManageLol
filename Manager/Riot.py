@@ -23,7 +23,7 @@ def is_top_team(name):
         if team['name'] == name:
             return "Top team inscribed"
 
-def send_confimation_email(addres, data):
+def send_email(addres, data):
     fromadd = 'manager.lol.models@gmail.com'
     toadd = addres
     if data['type'] == "confirmation":
@@ -32,8 +32,14 @@ def send_confimation_email(addres, data):
             players_list = players_list+"   - "+player.name+" ( "+player.role+" )\n"
         subj = "Welcome to Lol competition"
         text = "Hi team "+data['team']+"!\n"+players_list+"Your are ready to participate in the League of Legends competition"
-    if data['type'] == "xml":
+    elif data['type'] == "xml_ronda":
         subj = "Ronda "+str(data['id'])
+        text = data['text']
+    elif data['type'] == "xml_inscript":
+        subj = "Inscription information"
+        text = data['text']
+    elif data['type'] == "xml_winner":
+        subj = "Winners"
         text = data['text']
     msg = "\r\n".join([
         "From: manager.lol.models@gmail.com",

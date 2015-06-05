@@ -51,13 +51,28 @@
 {% block sidebar %}
 <div id="content-related">
     <div class="module" style="text-align: center;" id="recent-actions-module">
-        <h2 style="margin-bottom: 10px">{% trans 'Actions' %}</h2>
-        <h3 style="margin-bottom: 10px">Actions</h3>
-        {% if state_inscriptions == 'Open' %}
-            <a type="button" class="btn-success btn-lg" style="color:white;" href="{% url 'close_registers' %}">Close registers</a>
-        {% endif %}
-        <h3 style="margin-top: 10px">When button is clik competition will be done</h3>
+        <h2 style="margin-bottom: 10px ; text-align: center;">{% trans 'Actions' %}</h2>
+            {% if competition_active %}
+                {% if competition_state == 'Open' %}
+                    <a type="button" class="btn-success btn-lg" style="color:white;" href="{% url 'close_registers' %}">Close registers</a>
+                    <h3></h3>
+                {% else %}
+                    {% if not competition_generated %}
+                        <a type="button" class="btn-warning btn-lg" style="color:white;" href="{% url 'generate_competition' %}">Generate Competition</a>
+                        <br><br>
+                        <a type="button" class="btn-success btn-lg" style="color:white;" href="{% url 'open_registers' %}">Open registers</a>
+                        <h3></h3>
+                    {% else %}
+                        <a type="button" class="btn-danger btn-lg" style="color:white;" href="{% url 'close_competition' %}">Close competition</a>
+                        <h3></h3>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <h3>No actions</h3>
+            {% endif %}
     </div>
 </div>
 {% endblock %}
+
+
 

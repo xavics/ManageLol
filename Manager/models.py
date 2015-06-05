@@ -78,6 +78,15 @@ class Team(AbstractBaseUser):
     def get_statistics(self):
         return {'dead': self.get_total_deaths(), 'killed': self.get_total_kills()}
 
+    def get_as_dict(self):
+        return OrderedDict([('name',self.name),('email',self.email),('players',self.get_players_of_team_as_dict())])
+
+    def get_players_of_team_as_dict(self):
+        players_list = []
+        for player in Player.objects.filter(team=self):
+            players_list.append(player.get_as_dict())
+        return players_list
+
 class Player(models.Model):
     ROLES = (
         ('SU','Support'),
@@ -98,6 +107,8 @@ class Player(models.Model):
     def set_team(self, team):
         self.team = team
 
+    def get_as_dict(self):
+        return {'name':self.name,'email': self.email,'role':self.role}
 
 class Rounds(models.Model):
     data = models.DateTimeField()
@@ -181,4 +192,5 @@ class Reclamation(models.Model):
 
 class Competition(models.Model):
     state = models.CharField(max_length=10)
+    generated = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

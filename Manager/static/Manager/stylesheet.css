@@ -5,6 +5,11 @@ body {
     margin: 0px;
     overflow-y: scroll;
 }
+
+.icon_image {
+    background-image: url("pictures/winner_icon.png");
+}
+
 #form_prova{
     background-color: rgba(224,224,224,0.7);
     padding: 25px;
