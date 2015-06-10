@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group
 from Manager.models import Team, Player, Competition
 
 # For debugging
-with open('riotdatabase.json') as data_file:
+with open('riotdatabase2.json') as data_file:
     data = json.load(data_file)
 
 def make_referee(name, password):

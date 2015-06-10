@@ -7,14 +7,14 @@
             <div class="col-lg-offset-2 col-lg-8">
                 {% for team in winners_list %}
                     <div class="row">
-                        <div class="col-lg-3 col-md-3 col-sm-3">
+                        <div class="col-lg-4 col-md-4 col-sm-4">
                             <h1 style="color:aqua;">League {{ team.league }}</h1>
                         </div>
-                        <div class="col-lg-3 col-md-3 col-sm-3">
+                        <div class="col-lg-1 col-md-1 col-sm-1">
                             {% load staticfiles %}
                             <img src="{% static 'Manager/pictures/winner_icon.png' %}" alt="icon" class="img-rounded" />
                         </div>
-                        <div class="col-lg-6 col-md-6 col-sm-6">
+                        <div class="col-lg-7 col-md-7 col-sm-7">
                             <div class="row">
                                 <div class="col-lg-12 col-sm-12">
                                     <h1 style="color:deepskyblue;">{{ team.winner }}</h1>
@@ -22,7 +22,7 @@
                                 <div class="col-lg-offset-1 col-sm-offset-1 col-lg-11 col-sm-11">
                                     {% for player in team.players %}
                                         <div class="col-lg-2 col-sm-2">
-                                            <p style="text-align: center; color: snow">{{ player.name }}</p>
+                                            <h6 style="text-align: center; color: snow">{{ player.name }}</h6>
                                         </div>
                                     {% endfor %}
                                 </div>

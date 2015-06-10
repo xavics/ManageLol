@@ -62,7 +62,7 @@
             <ul class="nav navbar-nav navbar-right" style="margin-right: 10px">
                 {% if user.is_authenticated %}
                     {% if not user.is_referee and not user.is_admin %}
-                        {% if state_inscriptions == 'Close' %}
+                        {% if competition_generated %}
                             <li>
                                 <a href="{% url 'game' %}">Game</a>
                             </li>
